@@ -1,0 +1,2615 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="day">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Wasif Ahmed — LLM alignment, reasoning, interpretability</title>
+  <meta name="description" content="Wasif Ahmed — LLM alignment &amp; safety, reasoning, interpretability, agents, and inference." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600;700&family=Silkscreen:wght@400;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      /* Natural Air & Sky Palette for Home World (Day Mode) */
+      --sky-top: #b8e2ff;
+      --sky-mid: #def1ff;
+      --sky-bot: #f2f9ff;
+
+      --home-text: #0f243d;
+      --home-muted: #32547d;
+      --home-border: rgba(20, 54, 95, 0.14);
+
+      --brand-face: #122c4f;
+      --brand-edge-1: #6496c8;
+      --brand-edge-2: #98c2eb;
+
+      --pin-bg: rgba(255, 255, 255, 0.96);
+      --pin-border: rgba(45, 85, 130, 0.55);
+      --pin-text: #122946;
+      --pin-num: #d94676;
+
+      /* Cohesive Deep Slate-Navy Terminal Palette for Section Pages (Connected to Home Blues) */
+      --mp-bg: linear-gradient(180deg, #071222 0%, #0b192e 55%, #10233e 100%) fixed;
+      --mp-solid: #0a172b;
+      --mp-surface: rgba(16, 33, 58, 0.78);
+      --mp-text: #eef6ff;
+      --mp-muted: #98b8dc;
+      --mp-faint: #5e82ab;
+      --mp-border-solid: rgba(168, 210, 255, 0.72);
+      --mp-border-mid: rgba(132, 182, 238, 0.42);
+      --mp-border-dotted: rgba(132, 182, 238, 0.3);
+      --mp-link: #ffd166;
+      --mp-focus: #64b5f6;
+
+      --font-mono: "IBM Plex Mono", "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+      --font-crossy: "Silkscreen", monospace;
+    }
+
+    [data-theme="night"] {
+      --sky-top: #060f1c;
+      --sky-mid: #0a182b;
+      --sky-bot: #10233c;
+
+      --home-text: #eef5fc;
+      --home-muted: #8aa4c2;
+      --home-border: rgba(168, 202, 242, 0.14);
+
+      --brand-face: #f4f9ff;
+      --brand-edge-1: #3b699e;
+      --brand-edge-2: #193457;
+
+      --pin-bg: rgba(13, 27, 48, 0.94);
+      --pin-border: rgba(146, 185, 230, 0.45);
+      --pin-text: #eef5fc;
+      --pin-num: #ff85a9;
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: linear-gradient(180deg, var(--sky-top) 0%, var(--sky-mid) 54%, var(--sky-bot) 100%) fixed;
+      color: var(--home-text);
+      font-family: var(--font-mono);
+      font-size: 14px;
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+      transition: background 0.3s ease, color 0.25s ease;
+    }
+
+    body.section-active {
+      background: var(--mp-bg) !important;
+      color: var(--mp-text);
+    }
+
+    #sky-canvas {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    body.section-active #sky-canvas {
+      opacity: 0.22;
+    }
+
+    .site-shell {
+      position: relative;
+      z-index: 1;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .container {
+      width: min(1360px, 95vw);
+      margin: 0 auto;
+    }
+
+    /* ==================== HEADER & NAV ==================== */
+    .site-header {
+      padding-top: 18px;
+    }
+
+    .header-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 12px;
+    }
+
+    .brand-block {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      min-width: 0;
+    }
+
+    .brand-name {
+      font-family: var(--font-crossy);
+      font-weight: 700;
+      font-size: clamp(1.3rem, 2.3vw, 1.75rem);
+      letter-spacing: 0.04em;
+      text-decoration: none;
+      color: var(--brand-face);
+      text-shadow:
+        0 2px 0 var(--brand-edge-1),
+        0 4px 0 var(--brand-edge-2);
+      transition: transform 0.15s ease;
+    }
+
+    body.section-active .brand-name {
+      color: var(--mp-text);
+      text-shadow:
+        0 2px 0 #3b699e,
+        0 4px 0 #193457;
+    }
+
+    .brand-name:hover {
+      transform: translateY(-1px);
+    }
+
+    .brand-tagline {
+      margin: 4px 0 0;
+      font-family: var(--font-mono);
+      font-size: 0.83rem;
+      line-height: 1.45;
+      color: var(--home-muted);
+    }
+
+    .brand-quick-links {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      font-family: var(--font-mono);
+      font-size: 0.83rem;
+      color: var(--home-muted);
+    }
+
+    .brand-quick-links a {
+      color: var(--home-muted);
+      text-decoration: none;
+      transition: color 0.15s ease;
+    }
+
+    .brand-quick-links a:hover,
+    .brand-quick-links a:focus-visible {
+      color: var(--home-text);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    .brand-quick-links .link-sep {
+      opacity: 0.5;
+    }
+
+    body.section-active .brand-tagline,
+    body.section-active .brand-quick-links {
+      display: none;
+    }
+
+    .theme-toggle-btn {
+      flex-shrink: 0;
+      margin-top: 2px;
+      background: rgba(255, 255, 255, 0.32);
+      border: 1px solid var(--home-border);
+      border-radius: 999px;
+      padding: 4px 14px;
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      color: var(--home-text);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    [data-theme="night"] .theme-toggle-btn,
+    body.section-active .theme-toggle-btn {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: rgba(235, 235, 223, 0.2);
+      color: var(--mp-muted);
+    }
+
+    .theme-toggle-btn:hover {
+      border-color: var(--mp-link);
+    }
+
+    .site-nav {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 24px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--home-border);
+    }
+
+    body.section-active .site-nav {
+      border-bottom-color: rgba(235, 235, 223, 0.14);
+    }
+
+    .site-nav a {
+      text-decoration: none;
+      font-family: var(--font-mono);
+      font-size: 0.83rem;
+      color: var(--home-muted);
+      transition: color 0.15s ease;
+    }
+
+    body.section-active .site-nav a {
+      color: var(--mp-muted);
+    }
+
+    .site-nav a:hover,
+    .site-nav a.active {
+      color: var(--home-text);
+      font-weight: 600;
+    }
+
+    body.section-active .site-nav a:hover,
+    body.section-active .site-nav a.active {
+      color: var(--mp-text);
+      text-decoration: underline;
+      text-underline-offset: 4px;
+    }
+
+    /* ==================== VIEW 1: EXPANDED COLORFUL WORLD FRAME ==================== */
+    .town-view {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding-top: 10px;
+      padding-bottom: 12px;
+    }
+
+    .world-stage {
+      position: relative;
+      width: 100%;
+      flex: 1;
+      height: clamp(490px, 70vh, 700px);
+      min-height: 480px;
+      margin: 0 auto;
+      user-select: none;
+    }
+
+    #town-canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      cursor: pointer;
+    }
+
+    .pin-layer {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    .pin-label {
+      position: absolute;
+      transform: translate(-50%, -100%);
+      pointer-events: auto;
+      background: var(--pin-bg);
+      color: var(--pin-text);
+      border: 1.5px solid var(--pin-border);
+      border-radius: 4px;
+      padding: 4px 10px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      white-space: nowrap;
+      cursor: pointer;
+      box-shadow: 0 6px 16px rgba(15, 35, 62, 0.14);
+      transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.15s ease;
+    }
+
+    .pin-label .pin-num {
+      color: var(--pin-num);
+      margin-right: 4px;
+    }
+
+    .pin-label::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      bottom: -9px;
+      width: 1.5px;
+      height: 9px;
+      background: var(--pin-border);
+      transform: translateX(-50%);
+    }
+
+    .pin-label:hover,
+    .pin-label.pin-active {
+      transform: translate(-50%, -106%) scale(1.06);
+      border-color: #ff6b9d;
+    }
+
+    .town-footer {
+      padding-top: 10px;
+      border-top: 1px solid var(--home-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      color: var(--home-muted);
+    }
+
+    .walk-hint {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .player-chip {
+      width: 10px;
+      height: 10px;
+      border-radius: 2px;
+      background: #ff759f;
+      border: 1px solid #1e293b;
+      display: inline-block;
+    }
+
+    .arrows-cluster {
+      letter-spacing: 0.12em;
+    }
+
+    .hint-sep {
+      opacity: 0.35;
+      margin: 0 2px;
+    }
+
+    .hint-key {
+      color: var(--home-text);
+      font-weight: 600;
+    }
+
+    /* ==================== VIEW 2: EXACT MAX-PRINCE TERMINAL SECTION PAGES ==================== */
+    .section-view {
+      flex: 1;
+      background: transparent;
+      color: var(--mp-text);
+      padding: 38px 0 96px;
+      animation: sectionFade 0.22s ease-out;
+    }
+
+    @keyframes sectionFade {
+      from {
+        opacity: 0;
+        transform: translateY(6px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .mp-container {
+      width: min(740px, 90vw);
+      margin: 0 auto;
+    }
+
+    .mp-back-row {
+      margin-bottom: 32px;
+    }
+
+    .mp-back-btn {
+      background: none;
+      border: none;
+      padding: 0;
+      color: var(--mp-muted);
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      cursor: pointer;
+      transition: color 0.15s ease;
+    }
+
+    .mp-back-btn:hover {
+      color: var(--mp-text);
+    }
+
+    .mp-page-intro {
+      color: var(--mp-muted);
+      font-size: 0.9rem;
+      margin: 0 0 26px;
+    }
+
+    /* ---------- COMPONENT TYPE 1 (Screenshot 1): Smooth Collapsible Framed Box `[-]` / `[+]` ---------- */
+    .mp-collapse-box {
+      border: 1.5px solid var(--mp-border-solid);
+      background: var(--mp-surface);
+      margin-bottom: 40px;
+      transition: border-color 0.2s ease;
+    }
+
+    .mp-collapse-header {
+      width: 100%;
+      background: transparent;
+      border: none;
+      color: var(--mp-text);
+      font-family: var(--font-mono);
+      font-size: 0.92rem;
+      font-weight: 600;
+      padding: 12px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      text-align: left;
+      outline: none;
+    }
+
+    .mp-collapse-header:hover,
+    .mp-collapse-header:focus-visible {
+      box-shadow: inset 0 0 0 1.5px var(--mp-focus);
+    }
+
+    .mp-collapse-icon {
+      color: var(--mp-muted);
+      font-weight: 400;
+    }
+
+    /* Smooth CSS Grid 1fr <-> 0fr Accordion Drawer */
+    .mp-collapse-drawer {
+      display: grid;
+      grid-template-rows: 1fr;
+      transition: grid-template-rows 0.34s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .mp-collapse-box.is-collapsed .mp-collapse-drawer {
+      grid-template-rows: 0fr;
+    }
+
+    .mp-collapse-inner {
+      overflow: hidden;
+    }
+
+    .mp-collapse-content {
+      border-top: 1.5px solid var(--mp-border-solid);
+      padding: 18px 20px 22px;
+      color: var(--mp-muted);
+      font-size: 0.88rem;
+      line-height: 1.7;
+    }
+
+    .mp-collapse-content p {
+      margin: 0 0 16px;
+    }
+
+    .mp-collapse-content p:last-child {
+      margin-bottom: 0;
+    }
+
+    /* Dotted Table Rows inside the Collapsible Box (Screenshot 1) */
+    .mp-dotted-list {
+      list-style: none;
+      padding: 0;
+      margin: 16px 0 20px;
+    }
+
+    .mp-dotted-list li {
+      padding: 8px 0;
+      border-bottom: 1px dotted var(--mp-border-dotted);
+      color: var(--mp-text);
+      font-size: 0.88rem;
+    }
+
+    /* ---------- COMPONENT TYPE 2 (Screenshot 2): `## SECTION` + Left Date / Vertical Bar Timeline ---------- */
+    .mp-subblock {
+      margin-top: 44px;
+      margin-bottom: 44px;
+    }
+
+    .mp-h2 {
+      font-family: var(--font-mono);
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--mp-text);
+      margin: 0 0 16px;
+      padding-bottom: 10px;
+      border-bottom: 1.5px solid var(--mp-border-solid);
+    }
+
+    .mp-sublead {
+      color: var(--mp-muted);
+      font-size: 0.88rem;
+      margin: 0 0 24px;
+    }
+
+    .mp-timeline {
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+    }
+
+    .mp-timeline-item {
+      display: grid;
+      grid-template-columns: 125px 1fr;
+      align-items: stretch;
+    }
+
+    .mp-time-label {
+      font-family: var(--font-mono);
+      font-size: 0.84rem;
+      font-weight: 700;
+      color: var(--mp-text);
+      padding-right: 16px;
+      padding-top: 2px;
+    }
+
+    .mp-time-body {
+      border-left: 1.5px solid var(--mp-border-mid);
+      padding-left: 22px;
+      color: var(--mp-muted);
+      font-size: 0.88rem;
+      line-height: 1.72;
+    }
+
+    .mp-time-body p {
+      margin: 0;
+    }
+
+    .mp-time-body a,
+    .mp-link {
+      color: var(--mp-link);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    /* ---------- COMPONENT TYPE 3 (Screenshot 3): Dotted-Border Table Boxes (`education`, `graduate coursework`, `certifications`) ---------- */
+    .mp-dotted-box {
+      border: 1px dotted var(--mp-border-dotted);
+      padding: 20px 24px;
+      margin-bottom: 24px;
+    }
+
+    .mp-box-title {
+      font-family: var(--font-mono);
+      font-size: 0.94rem;
+      font-weight: 700;
+      color: var(--mp-text);
+      margin: 0 0 18px;
+    }
+
+    .mp-box-entry + .mp-box-entry {
+      margin-top: 20px;
+    }
+
+    .mp-entry-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 4px;
+    }
+
+    .mp-entry-name {
+      font-weight: 700;
+      color: var(--mp-text);
+      font-size: 0.9rem;
+    }
+
+    .mp-entry-date {
+      color: var(--mp-muted);
+      font-size: 0.86rem;
+      white-space: nowrap;
+    }
+
+    .mp-entry-detail {
+      color: var(--mp-muted);
+      font-size: 0.86rem;
+      line-height: 1.65;
+      margin: 0;
+    }
+
+    .mp-now-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      color: var(--mp-muted);
+      font-size: 0.88rem;
+      line-height: 1.8;
+    }
+
+    .mp-contact-foot {
+      margin-top: 26px;
+      font-size: 0.9rem;
+      color: var(--mp-muted);
+    }
+
+    @media (max-width: 680px) {
+      .mp-timeline-item {
+        grid-template-columns: 1fr;
+        gap: 8px;
+      }
+      .site-nav {
+        gap: 12px 18px;
+      }
+      .brand-tagline,
+      .brand-quick-links {
+        font-size: 0.78rem;
+      }
+      .world-stage {
+        height: 450px;
+        min-height: 430px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html {
+        scroll-behavior: auto;
+      }
+      *,
+      *::before,
+      *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Natural Volumetric Clouds & Flying Birds Sky Canvas -->
+  <canvas id="sky-canvas" aria-hidden="true"></canvas>
+
+  <div class="site-shell">
+    <!-- Top Header & Navigation -->
+    <header class="site-header container">
+      <div class="header-top">
+        <div class="brand-block">
+          <a href="#town" class="brand-name" id="home-brand" aria-label="Wasif Ahmed — Return to world">
+            WASIF AHMED
+          </a>
+          <p class="brand-tagline">
+            LLM alignment &amp; safety · reasoning · interpretability · agents · inference
+          </p>
+          <div class="brand-quick-links" aria-label="Quick links">
+            <a href="mailto:wasif@lums.edu.pk">email</a>
+            <span class="link-sep" aria-hidden="true">·</span>
+            <a href="#cv" data-section="cv">CV</a>
+            <span class="link-sep" aria-hidden="true">·</span>
+            <a href="https://github.com/WasifAhmed1917" target="_blank" rel="noopener noreferrer">GitHub</a>
+          </div>
+        </div>
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle day and night mode">
+          <span id="theme-toggle-text">night</span>
+        </button>
+      </div>
+
+      <nav class="site-nav" aria-label="Primary sections">
+        <a href="#about" data-section="about">about</a>
+        <a href="#research" data-section="research">research</a>
+        <a href="#experience" data-section="experience">experience</a>
+        <a href="#cv" data-section="cv">cv</a>
+        <a href="#blog" data-section="blog">blog</a>
+      </nav>
+    </header>
+
+    <!-- ==================== VIEW 1: EXPANDED COLORFUL ISOMETRIC WORLD ==================== -->
+    <main id="town-view" class="town-view container">
+      <div class="world-stage" id="world-stage">
+        <canvas id="town-canvas"></canvas>
+
+        <!-- Clean Floating Building Labels -->
+        <div class="pin-layer" id="pin-layer">
+          <button class="pin-label" data-target="about">
+            <span class="pin-num">01</span> about
+          </button>
+          <button class="pin-label" data-target="research">
+            <span class="pin-num">02</span> research
+          </button>
+          <button class="pin-label" data-target="experience">
+            <span class="pin-num">03</span> experience
+          </button>
+          <button class="pin-label" data-target="cv">
+            <span class="pin-num">04</span> cv
+          </button>
+          <button class="pin-label" data-target="blog">
+            <span class="pin-num">05</span> blog
+          </button>
+        </div>
+      </div>
+
+      <!-- Concise Sleek Bottom Bar -->
+      <footer class="town-footer">
+        <div class="walk-hint">
+          <span class="player-chip" aria-hidden="true"></span>
+          <span class="arrows-cluster">WASD / ↑ ← ↓ →</span>
+          <span class="hint-sep">/</span>
+          <span>press <span class="hint-key">enter</span> to visit</span>
+          <span id="near-building-hint"></span>
+        </div>
+      </footer>
+    </main>
+
+    <!-- ==================== VIEW 2: MAX-PRINCE TERMINAL SECTION PAGES ==================== -->
+    <div id="section-view" class="section-view hidden">
+      <div class="mp-container">
+        <div class="mp-back-row">
+          <button id="back-to-town" class="mp-back-btn">← back to world</button>
+        </div>
+
+        <!-- ==================== 01 // ABOUT (Education, Graduate Coursework, Certifications Dotted Tables) ==================== -->
+        <section class="mp-page hidden" data-page="about">
+          <!-- Dotted Box 1: Education -->
+          <div class="mp-dotted-box">
+            <h2 class="mp-box-title">education</h2>
+
+            <div class="mp-box-entry">
+              <div class="mp-entry-head">
+                <span class="mp-entry-name">[university / institution]</span>
+                <span class="mp-entry-date">2023-27</span>
+              </div>
+              <p class="mp-entry-detail">[degree / major details — edit here]</p>
+            </div>
+
+            <div class="mp-box-entry">
+              <div class="mp-entry-head">
+                <span class="mp-entry-name">[high school / prior institution]</span>
+                <span class="mp-entry-date">2019-23</span>
+              </div>
+              <p class="mp-entry-detail">[gpa · test scores · honors — edit here]</p>
+            </div>
+          </div>
+
+          <!-- Dotted Box 2: Graduate Coursework -->
+          <div class="mp-dotted-box">
+            <h2 class="mp-box-title">graduate coursework</h2>
+
+            <div class="mp-box-entry">
+              <div class="mp-entry-head">
+                <span class="mp-entry-name">[course title 01]</span>
+                <span class="mp-entry-date">2026</span>
+              </div>
+              <p class="mp-entry-detail">[topics / syllabus / notes — edit here]</p>
+            </div>
+
+            <div class="mp-box-entry">
+              <div class="mp-entry-head">
+                <span class="mp-entry-name">[course title 02]</span>
+                <span class="mp-entry-date">2025</span>
+              </div>
+              <p class="mp-entry-detail">[topics / syllabus / notes — edit here]</p>
+            </div>
+          </div>
+
+          <!-- Dotted Box 3: Certifications -->
+          <div class="mp-dotted-box">
+            <h2 class="mp-box-title">certifications</h2>
+
+            <div class="mp-box-entry">
+              <div class="mp-entry-head">
+                <span class="mp-entry-name">[organization / program 01]</span>
+                <span class="mp-entry-date">2026</span>
+              </div>
+              <p class="mp-entry-detail">[certificate title · details — edit here]</p>
+            </div>
+
+            <div class="mp-box-entry">
+              <div class="mp-entry-head">
+                <span class="mp-entry-name">[organization / program 02]</span>
+                <span class="mp-entry-date">2025</span>
+              </div>
+              <p class="mp-entry-detail">[certificate title · details — edit here]</p>
+            </div>
+          </div>
+
+          <!-- Dotted Box 4: /now -->
+          <div class="mp-dotted-box">
+            <h2 class="mp-box-title">/now</h2>
+            <ul class="mp-now-list">
+              <li>- [current role / activity 01]</li>
+              <li>- [current research / focus 02]</li>
+              <li>- [reading: book / paper title]</li>
+            </ul>
+          </div>
+
+          <div class="mp-contact-foot">
+            contact: <a href="mailto:wasif@lums.edu.pk" class="mp-link">wasif@lums.edu.pk</a>
+          </div>
+        </section>
+
+        <!-- ==================== 02 // RESEARCH (Collapsible Research Interests + Past Research + Projects + Ideas) ==================== -->
+        <section class="mp-page hidden" data-page="research">
+          <p class="mp-page-intro">
+            reaching out at: wasif [at] lums [dot] edu [dot] pk
+          </p>
+
+          <!-- 1. Smoothly Collapsible `research interests [-]` Table (Screenshot 1) -->
+          <div class="mp-collapse-box">
+            <button class="mp-collapse-header" aria-expanded="true">
+              <span>research interests</span>
+              <span class="mp-collapse-icon">[-]</span>
+            </button>
+            <div class="mp-collapse-drawer">
+              <div class="mp-collapse-inner">
+                <div class="mp-collapse-content">
+                  <p>[Add your overarching research interests introduction paragraph here.]</p>
+
+                  <ul class="mp-dotted-list">
+                    <li>[Research Topic 01]</li>
+                    <li>[Research Topic 02]</li>
+                    <li>[Research Topic 03]</li>
+                    <li>[Research Topic 04]</li>
+                    <li>[Research Topic 05]</li>
+                    <li>[Research Topic 06]</li>
+                  </ul>
+
+                  <p>[Add your closing research direction note here.]</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 2. `## PAST RESEARCH` / Research Experience (Screenshot 2) -->
+          <div class="mp-subblock">
+            <h2 class="mp-h2">## RESEARCH EXPERIENCE</h2>
+            <p class="mp-sublead">[Add a one-line summary of your research focus here:]</p>
+
+            <div class="mp-timeline">
+              <div class="mp-timeline-item">
+                <div class="mp-time-label">2025-26</div>
+                <div class="mp-time-body">
+                  <p>[Add your research experience description, methods, findings, and workshop/paper links here.]</p>
+                </div>
+              </div>
+
+              <div class="mp-timeline-item">
+                <div class="mp-time-label">summer 2026</div>
+                <div class="mp-time-body">
+                  <p>[Add your research experience description, methods, findings, and workshop/paper links here.]</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3. `## PROJECTS` Section under Research -->
+          <div id="research-projects" class="mp-subblock">
+            <h2 class="mp-h2">## PROJECTS</h2>
+            <p class="mp-sublead">[Add your project descriptions below:]</p>
+
+            <div class="mp-timeline">
+              <div class="mp-timeline-item">
+                <div class="mp-time-label">2026</div>
+                <div class="mp-time-body">
+                  <p>[Add project 01 details, stack, and GitHub link here.]</p>
+                </div>
+              </div>
+
+              <div class="mp-timeline-item">
+                <div class="mp-time-label">2025</div>
+                <div class="mp-time-body">
+                  <p>[Add project 02 details, stack, and GitHub link here.]</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 4. Smoothly Collapsible `ideas [-]` Table -->
+          <div class="mp-collapse-box">
+            <button class="mp-collapse-header" aria-expanded="true">
+              <span>ideas</span>
+              <span class="mp-collapse-icon">[-]</span>
+            </button>
+            <div class="mp-collapse-drawer">
+              <div class="mp-collapse-inner">
+                <div class="mp-collapse-content">
+                  <p>[Add your open research questions and ideas here.]</p>
+
+                  <ul class="mp-dotted-list">
+                    <li>[Idea / Open Question 01]</li>
+                    <li>[Idea / Open Question 02]</li>
+                    <li>[Idea / Open Question 03]</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== 03 // EXPERIENCE ==================== -->
+        <section class="mp-page hidden" data-page="experience">
+          <div class="mp-subblock" style="margin-top: 0;">
+            <h2 class="mp-h2">## EXPERIENCE</h2>
+            <p class="mp-sublead">[Add your academic and industry experience below:]</p>
+
+            <div class="mp-timeline">
+              <div class="mp-timeline-item">
+                <div class="mp-time-label">2025-26</div>
+                <div class="mp-time-body">
+                  <p>[Add role 01 details here.]</p>
+                </div>
+              </div>
+
+              <div class="mp-timeline-item">
+                <div class="mp-time-label">2024-25</div>
+                <div class="mp-time-body">
+                  <p>[Add role 02 details here.]</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== 04 // CV (Resumes + Honors & Awards Dotted Tables) ==================== -->
+        <section class="mp-page hidden" data-page="cv">
+          <div class="mp-dotted-box">
+            <h2 class="mp-box-title">resumes &amp; curriculum vitae</h2>
+
+            <div class="mp-box-entry">
+              <div class="mp-entry-head">
+                <span class="mp-entry-name">academic &amp; research cv</span>
+                <span class="mp-entry-date"><a href="#" class="mp-link">pdf ↗</a></span>
+              </div>
+              <p class="mp-entry-detail">[Add description or link to your research CV PDF here.]</p>
+            </div>
+
+            <div class="mp-box-entry">
+              <div class="mp-entry-head">
+                <span class="mp-entry-name">ml engineering resume</span>
+                <span class="mp-entry-date"><a href="#" class="mp-link">pdf ↗</a></span>
+              </div>
+              <p class="mp-entry-detail">[Add description or link to your engineering resume PDF here.]</p>
+            </div>
+          </div>
+
+          <!-- Honors & Awards Dotted Table Box under CV -->
+          <div id="cv-honors" class="mp-dotted-box">
+            <h2 class="mp-box-title">honors &amp; awards</h2>
+
+            <div class="mp-box-entry">
+              <div class="mp-entry-head">
+                <span class="mp-entry-name">[award / fellowship / honor 01]</span>
+                <span class="mp-entry-date">2026</span>
+              </div>
+              <p class="mp-entry-detail">[Add details here.]</p>
+            </div>
+
+            <div class="mp-box-entry">
+              <div class="mp-entry-head">
+                <span class="mp-entry-name">[award / competition / scholarship 02]</span>
+                <span class="mp-entry-date">2025</span>
+              </div>
+              <p class="mp-entry-detail">[Add details here.]</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- ==================== 05 // BLOG ==================== -->
+        <section class="mp-page hidden" data-page="blog">
+          <div class="mp-subblock" style="margin-top: 0;">
+            <h2 class="mp-h2">## BLOG &amp; NOTES</h2>
+            <p class="mp-sublead">[Add your essays and working notes below:]</p>
+
+            <div class="mp-timeline">
+              <div class="mp-timeline-item">
+                <div class="mp-time-label">2026</div>
+                <div class="mp-time-body">
+                  <p>[Add blog post 01 title and link here.]</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (() => {
+      const root = document.documentElement;
+      const body = document.body;
+
+      // 1. Day / Night Theme Toggle
+      const themeBtn = document.getElementById("theme-toggle");
+      const themeText = document.getElementById("theme-toggle-text");
+
+      function setTheme(mode) {
+        root.setAttribute("data-theme", mode);
+        try {
+          localStorage.setItem("wasif_theme", mode);
+        } catch (e) {}
+        if (themeText) themeText.textContent = mode === "night" ? "day" : "night";
+      }
+
+      let savedTheme = "day";
+      try {
+        savedTheme = localStorage.getItem("wasif_theme") || "day";
+      } catch (e) {}
+      setTheme(savedTheme);
+
+      themeBtn?.addEventListener("click", () => {
+        const cur = root.getAttribute("data-theme");
+        setTheme(cur === "night" ? "day" : "night");
+      });
+
+      // 2. Smooth Collapsible Boxes (`[-]` / `[+]`)
+      document.querySelectorAll(".mp-collapse-header").forEach((header) => {
+        header.addEventListener("click", () => {
+          const box = header.closest(".mp-collapse-box");
+          if (!box) return;
+          const collapsed = box.classList.toggle("is-collapsed");
+          header.setAttribute("aria-expanded", String(!collapsed));
+          const icon = header.querySelector(".mp-collapse-icon");
+          if (icon) icon.textContent = collapsed ? "[+]" : "[-]";
+        });
+      });
+
+      const reducedMotionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+      let prefersReducedMotion = reducedMotionQuery.matches;
+      reducedMotionQuery.addEventListener?.("change", (e) => {
+        prefersReducedMotion = e.matches;
+      });
+
+      // 3. View Navigation (World Frame <-> Separate Max-Prince Dark Section Pages)
+      const townView = document.getElementById("town-view");
+      const sectionView = document.getElementById("section-view");
+      const backToTownBtn = document.getElementById("back-to-town");
+      const homeBrand = document.getElementById("home-brand");
+      const navLinks = document.querySelectorAll(".site-nav a[data-section]");
+      const sectionTriggerLinks = document.querySelectorAll("a[data-section]");
+      const mpPages = document.querySelectorAll(".mp-page[data-page]");
+      const pinLabels = document.querySelectorAll(".pin-label[data-target]");
+      const nearHintEl = document.getElementById("near-building-hint");
+
+      const SECTION_ALIASES = {
+        projects: { page: "research", anchorId: "research-projects" },
+        honors: { page: "cv", anchorId: "cv-honors" },
+      };
+
+      let activeSection = null;
+
+      function openSectionPage(sectionId, pushHash = true, anchorId = null) {
+        const targetPage = document.querySelector(`.mp-page[data-page="${sectionId}"]`);
+        if (!targetPage) return;
+
+        activeSection = sectionId;
+        body.classList.add("section-active");
+        townView?.classList.add("hidden");
+        sectionView?.classList.remove("hidden");
+
+        mpPages.forEach((p) => {
+          p.classList.toggle("hidden", p.getAttribute("data-page") !== sectionId);
+        });
+
+        navLinks.forEach((a) => {
+          a.classList.toggle("active", a.getAttribute("data-section") === sectionId);
+        });
+
+        if (pushHash) history.pushState(null, "", `#${sectionId}`);
+        const scrollBehavior = prefersReducedMotion ? "auto" : "smooth";
+        const anchorEl = anchorId ? document.getElementById(anchorId) : null;
+        if (anchorEl) {
+          anchorEl.scrollIntoView({ behavior: scrollBehavior, block: "start" });
+        } else {
+          window.scrollTo({ top: 0, behavior: scrollBehavior });
+        }
+      }
+
+      function openHashRoute(rawHash) {
+        const hash = (rawHash || "").replace(/^#/, "");
+        if (!hash || hash === "town") return false;
+        const alias = SECTION_ALIASES[hash];
+        if (alias) {
+          openSectionPage(alias.page, false, alias.anchorId);
+          return true;
+        }
+        if (document.querySelector(`.mp-page[data-page="${hash}"]`)) {
+          openSectionPage(hash, false);
+          return true;
+        }
+        return false;
+      }
+
+      function returnToTown(pushHash = true) {
+        activeSection = null;
+        body.classList.remove("section-active");
+        sectionView?.classList.add("hidden");
+        townView?.classList.remove("hidden");
+        navLinks.forEach((a) => a.classList.remove("active"));
+        if (pushHash) history.pushState(null, "", "#town");
+        resizeTownCanvas();
+      }
+
+      backToTownBtn?.addEventListener("click", () => returnToTown(true));
+      homeBrand?.addEventListener("click", (e) => {
+        e.preventDefault();
+        returnToTown(true);
+      });
+
+      sectionTriggerLinks.forEach((link) => {
+        link.addEventListener("click", (e) => {
+          e.preventDefault();
+          const sec = link.getAttribute("data-section");
+          if (sec) openSectionPage(sec, true);
+        });
+      });
+
+      window.addEventListener("popstate", () => {
+        if (!openHashRoute(window.location.hash)) {
+          returnToTown(false);
+        }
+      });
+
+      // 4. NATURAL VOLUMETRIC CLOUDS & FLYING BIRDS IN SKY
+      const skyCanvas = document.getElementById("sky-canvas");
+      const skyCtx = skyCanvas ? skyCanvas.getContext("2d") : null;
+      let skyW = window.innerWidth;
+      let skyH = window.innerHeight;
+
+      function resizeSky() {
+        if (!skyCanvas || !skyCtx) return;
+        const dpr = window.devicePixelRatio || 1;
+        skyW = window.innerWidth;
+        skyH = window.innerHeight;
+        skyCanvas.width = skyW * dpr;
+        skyCanvas.height = skyH * dpr;
+        skyCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      }
+      window.addEventListener("resize", resizeSky);
+      resizeSky();
+
+      const naturalClouds = Array.from({ length: 12 }, (_, i) => {
+        const puffCount = 5 + (i % 3);
+        const puffs = Array.from({ length: puffCount }, (__, j) => {
+          const norm = (j / (puffCount - 1)) * 2 - 1;
+          return {
+            ox: norm * 52 + Math.sin(i * 3 + j) * 8,
+            oy: Math.abs(norm) * 10 - (j % 2) * 6,
+            r: (1 - Math.abs(norm) * 0.38) * 32 + (j % 2) * 5,
+          };
+        });
+        return {
+          x: (i / 12) * 1.3 - 0.15,
+          y: 0.06 + ((i * 0.19) % 0.78),
+          scale: 0.65 + (i % 4) * 0.25,
+          speed: 0.00009 + (i % 5) * 0.000035,
+          alpha: 0.74 + (i % 3) * 0.1,
+          puffs,
+        };
+      });
+
+      const skyBirdFlocks = [
+        { x: 0.08, y: 0.16, speed: 0.00042, count: 4, scale: 1.0, phase: 0.2 },
+        { x: 0.55, y: 0.24, speed: 0.00034, count: 5, scale: 0.85, phase: 1.9 },
+        { x: 0.32, y: 0.42, speed: 0.00038, count: 3, scale: 0.9, phase: 3.4 },
+        { x: 0.78, y: 0.12, speed: 0.00046, count: 3, scale: 0.75, phase: 4.8 },
+        { x: 0.22, y: 0.68, speed: 0.00036, count: 4, scale: 0.95, phase: 2.6 },
+      ];
+
+      const stars = Array.from({ length: 60 }, () => ({
+        x: Math.random(),
+        y: Math.random() * 0.85,
+        r: 0.7 + Math.random() * 1.3,
+        phase: Math.random() * Math.PI * 2,
+      }));
+
+      function drawNaturalCloud(c, cloud, isNight, inSection) {
+        const cx = (cloud.x - 0.15) * skyW;
+        const cy = cloud.y * skyH;
+        c.save();
+        c.translate(cx, cy);
+        c.scale(cloud.scale, cloud.scale);
+
+        c.fillStyle = isNight || inSection
+          ? "rgba(18, 36, 64, 0.24)"
+          : `rgba(175, 212, 245, ${cloud.alpha * 0.55})`;
+        c.beginPath();
+        cloud.puffs.forEach((p) => {
+          c.moveTo(p.ox + p.r, p.oy + 7);
+          c.arc(p.ox, p.oy + 7, p.r * 0.96, 0, Math.PI * 2);
+        });
+        c.fill();
+
+        c.fillStyle = isNight || inSection
+          ? "rgba(38, 68, 108, 0.2)"
+          : `rgba(255, 255, 255, ${cloud.alpha})`;
+        c.beginPath();
+        cloud.puffs.forEach((p) => {
+          c.moveTo(p.ox + p.r, p.oy);
+          c.arc(p.ox, p.oy, p.r, 0, Math.PI * 2);
+        });
+        c.fill();
+
+        if (!isNight && !inSection) {
+          c.fillStyle = "rgba(255, 255, 255, 0.95)";
+          c.beginPath();
+          cloud.puffs.forEach((p) => {
+            c.moveTo(p.ox + p.r * 0.75, p.oy - 4);
+            c.arc(p.ox - 2, p.oy - 4, p.r * 0.75, 0, Math.PI * 2);
+          });
+          c.fill();
+        }
+
+        c.restore();
+      }
+
+      function drawSkyBirdFlock(c, flock, isNight, now) {
+        const baseX = (flock.x - 0.1) * skyW;
+        const baseY = flock.y * skyH + Math.sin(now * 0.0018 + flock.phase) * 10;
+
+        c.save();
+        c.strokeStyle = isNight ? "rgba(215, 234, 255, 0.7)" : "rgba(28, 64, 108, 0.62)";
+        c.lineWidth = 1.9 * flock.scale;
+        c.lineCap = "round";
+
+        for (let i = 0; i < flock.count; i++) {
+          const bx = baseX - i * 18 * flock.scale;
+          const by = baseY + (i % 2 === 0 ? 1 : -1) * i * 9 * flock.scale;
+          const wingFlap = Math.sin(now * 0.013 + i * 0.75 + flock.phase) * 6 * flock.scale;
+          const span = 7.5 * flock.scale;
+
+          c.beginPath();
+          c.moveTo(bx - span, by - wingFlap);
+          c.quadraticCurveTo(bx - span * 0.4, by - wingFlap * 0.4, bx, by);
+          c.quadraticCurveTo(bx + span * 0.4, by - wingFlap * 0.4, bx + span, by - wingFlap);
+          c.stroke();
+        }
+        c.restore();
+      }
+
+      function renderSky(now) {
+        if (!skyCtx) return;
+        skyCtx.clearRect(0, 0, skyW, skyH);
+
+        const isNight = root.getAttribute("data-theme") === "night";
+        const inSection = body.classList.contains("section-active");
+
+        if (isNight || inSection) {
+          stars.forEach((st) => {
+            const alpha = 0.2 + 0.55 * Math.abs(Math.sin(now * 0.0014 + st.phase));
+            skyCtx.fillStyle = `rgba(215, 234, 255, ${inSection ? alpha * 0.3 : alpha})`;
+            skyCtx.beginPath();
+            skyCtx.arc(st.x * skyW, st.y * skyH, st.r, 0, Math.PI * 2);
+            skyCtx.fill();
+          });
+        }
+
+        naturalClouds.forEach((cl) => {
+          cl.x = (cl.x + cl.speed) % 1.35;
+          drawNaturalCloud(skyCtx, cl, isNight, inSection);
+        });
+
+        if (!inSection) {
+          skyBirdFlocks.forEach((flock) => {
+            flock.x = (flock.x + flock.speed) % 1.25;
+            drawSkyBirdFlock(skyCtx, flock, isNight, now);
+          });
+        }
+      }
+
+      // 5. EXPANDED 19x19 ISOMETRIC PLATFORM + COLORFUL GREENERY + SHUNSUI KYORAKU + WATER/CAR HAZARDS
+      const townCanvas = document.getElementById("town-canvas");
+      const ctx = townCanvas ? townCanvas.getContext("2d") : null;
+      const worldStage = document.getElementById("world-stage");
+
+      const GRID_RADIUS = 9.5;
+      const SPAWN_GX = -1;
+      const SPAWN_GY = 2;
+
+      let W = 1260;
+      let H = 620;
+      let originX = W / 2;
+      let originY = H * 0.44;
+      let tileW = 23;
+      let tileH = 11.8;
+      let currentHoverZ = 0;
+
+      function resizeTownCanvas() {
+        if (!townCanvas || !ctx || !worldStage) return;
+        const rect = worldStage.getBoundingClientRect();
+        const dpr = window.devicePixelRatio || 1;
+        W = rect.width > 50 ? rect.width : Math.min(1360, window.innerWidth * 0.95);
+        H = rect.height > 50 ? rect.height : 600;
+        townCanvas.width = W * dpr;
+        townCanvas.height = H * dpr;
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+        const maxTileByW = (W * 0.86) / (GRID_RADIUS * 4);
+        const maxTileByH = Math.max(150, H - 185) / (GRID_RADIUS * 4 * 0.515);
+        tileW = Math.max(15, Math.min(26.5, maxTileByW, maxTileByH));
+        tileH = tileW * 0.515;
+        originX = W * 0.5;
+        originY = 74 + (H - 185) * 0.5;
+      }
+      window.addEventListener("resize", resizeTownCanvas);
+      resizeTownCanvas();
+
+      function iso(gx, gy, z = 0) {
+        return {
+          x: originX + (gx - gy) * tileW,
+          y: originY + (gx + gy) * tileH - (z + currentHoverZ),
+        };
+      }
+
+      function screenToIso(sx, sy) {
+        const dx = (sx - originX) / tileW;
+        const dy = (sy - (originY - currentHoverZ)) / tileH;
+        return {
+          gx: (dx + dy) / 2,
+          gy: (dy - dx) / 2,
+        };
+      }
+
+      // 5 Well-Separated Colorful Buildings across the 19x19 Platform
+      const BUILDINGS = {
+        about: {
+          id: "about",
+          label: "01 about",
+          gx: -6.2,
+          gy: -6.2,
+          wx: 2.5,
+          wy: 2.3,
+          h: 40,
+          doorGx: -5,
+          doorGy: -4,
+        },
+        research: {
+          id: "research",
+          label: "02 research",
+          gx: 6.2,
+          gy: -5.8,
+          wx: 2.7,
+          wy: 2.5,
+          h: 44,
+          doorGx: 4,
+          doorGy: -4,
+        },
+        experience: {
+          id: "experience",
+          label: "03 experience",
+          gx: 5.8,
+          gy: 4.5,
+          wx: 2.4,
+          wy: 2.4,
+          h: 64,
+          doorGx: 4,
+          doorGy: 3,
+        },
+        cv: {
+          id: "cv",
+          label: "04 cv",
+          gx: -0.5,
+          gy: 6.8,
+          wx: 2.5,
+          wy: 2.2,
+          h: 36,
+          doorGx: -1,
+          doorGy: 5,
+        },
+        blog: {
+          id: "blog",
+          label: "05 blog",
+          gx: -6.4,
+          gy: 2.8,
+          wx: 2.2,
+          wy: 2.0,
+          h: 36,
+          doorGx: -4,
+          doorGy: 2,
+        },
+      };
+
+      const CAR_SCALE = 1.4;
+      const LOG_LEN_SCALE = 1.5;
+      const LOG_THICK_SCALE = 1.5;
+      const TREE_HEIGHT_SCALE = 1.28;
+
+      const riverLogs = [
+        { gx: -6.5, gy: 0, len: 2.0 * LOG_LEN_SCALE, speed: 0.011 },
+        { gx: 2.0, gy: 0, len: 2.0 * LOG_LEN_SCALE, speed: 0.011 },
+      ];
+
+      // 5 flat isometric stepping stones connecting the north bank (gy=-1) and south bank (gy=1) at gx=3
+      const STEPPING_STONES_GX = 3;
+      const STEPPING_STONES = [
+        { gx: 2.94, gy: -0.68, wx: 0.46, wy: 0.24, phase: 0.0 },
+        { gx: 3.12, gy: -0.34, wx: 0.48, wy: 0.24, phase: 1.1 },
+        { gx: 2.92, gy: 0.0, wx: 0.5, wy: 0.25, phase: 2.2 },
+        { gx: 3.1, gy: 0.34, wx: 0.48, wy: 0.24, phase: 3.3 },
+        { gx: 2.95, gy: 0.68, wx: 0.46, wy: 0.24, phase: 4.4 },
+      ];
+      let hoverSteppingStones = false;
+
+      const lilyPads = [
+        { gx: -4, gy: 0, hasLotus: true },
+        { gx: 4, gy: 0, hasLotus: true },
+        { gx: 7, gy: 0, hasLotus: false },
+      ];
+
+      const cars = [
+        { axis: "x", gx: -7.5, gy: -2, speed: 0.03, color: "#ffbe0b", roof: "#fff3b0" },
+        { axis: "x", gx: 1.8, gy: -2, speed: 0.03, color: "#ef476f", roof: "#ffc2d1" },
+        { axis: "y", gx: -1, gy: 7.5, speed: -0.026, color: "#118ab2", roof: "#a8dadc" },
+      ];
+
+      const shunsui = {
+        gx: SPAWN_GX,
+        gy: SPAWN_GY,
+        visGx: SPAWN_GX,
+        visGy: SPAWN_GY,
+        hopZ: 0,
+        sinkZ: 0,
+        state: "normal",
+        stateStart: 0,
+        walkCycle: 0,
+        slashTimer: 0,
+        hopping: false,
+        hopStart: 0,
+        fromGx: SPAWN_GX,
+        fromGy: SPAWN_GY,
+        toGx: SPAWN_GX,
+        toGy: SPAWN_GY,
+        pathQueue: [],
+        nearBuilding: null,
+      };
+
+      const particles = [];
+      const waterRings = [];
+
+      function spawnSakuraBurst(gx, gy, count = 14) {
+        const palette = ["#ff759f", "#ff9ebb", "#ffb3c6", "#ffe5ec", "#f0c265"];
+        for (let i = 0; i < count; i++) {
+          const angle = (Math.PI * 2 * i) / count + Math.random() * 0.5;
+          const speed = 0.03 + Math.random() * 0.05;
+          particles.push({
+            gx,
+            gy,
+            z: 6 + Math.random() * 10,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed,
+            vz: 0.25 + Math.random() * 0.35,
+            size: 3 + Math.random() * 2.5,
+            alpha: 0.98,
+            color: palette[i % palette.length],
+          });
+        }
+      }
+
+      function spawnWaterSplash(gx, gy) {
+        const palette = ["#48cae4", "#90e0ef", "#caf0f8", "#ffffff"];
+        for (let i = 0; i < 24; i++) {
+          const angle = (Math.PI * 2 * i) / 24 + Math.random() * 0.3;
+          const speed = 0.025 + Math.random() * 0.045;
+          particles.push({
+            gx,
+            gy,
+            z: 2,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed,
+            vz: 0.45 + Math.random() * 0.45,
+            size: 3 + Math.random() * 2.5,
+            alpha: 1.0,
+            color: palette[i % palette.length],
+          });
+        }
+        waterRings.push({ gx, gy, r: 2, alpha: 0.95 });
+      }
+
+      function isSafeRiverCrossing(gx, gy) {
+        if (gy !== 0) return true;
+        if (gx >= -1.6 && gx <= 0.4) return true;
+        if (Math.abs(gx - STEPPING_STONES_GX) < 0.65) return true;
+        for (const lp of lilyPads) {
+          if (Math.abs(gx - lp.gx) < 0.65) return true;
+        }
+        for (const log of riverLogs) {
+          if (Math.abs(gx - log.gx) < log.len * 0.55) return true;
+        }
+        return false;
+      }
+
+      function triggerDrown(now) {
+        if (shunsui.state !== "normal") return;
+        shunsui.state = "drowning";
+        shunsui.stateStart = now;
+        shunsui.hopping = false;
+        shunsui.pathQueue = [];
+        spawnWaterSplash(shunsui.visGx, shunsui.visGy);
+        updateProximityControls();
+      }
+
+      function triggerCarHit(now) {
+        if (shunsui.state !== "normal") return;
+        shunsui.state = "hit";
+        shunsui.stateStart = now;
+        shunsui.hopping = false;
+        shunsui.pathQueue = [];
+        spawnSakuraBurst(shunsui.visGx, shunsui.visGy, 28);
+        updateProximityControls();
+      }
+
+      function respawnAtBase() {
+        shunsui.gx = SPAWN_GX;
+        shunsui.gy = SPAWN_GY;
+        shunsui.visGx = SPAWN_GX;
+        shunsui.visGy = SPAWN_GY;
+        shunsui.hopZ = 0;
+        shunsui.sinkZ = 0;
+        shunsui.state = "normal";
+        shunsui.hopping = false;
+        shunsui.pathQueue = [];
+        spawnSakuraBurst(SPAWN_GX, SPAWN_GY, 18);
+        updateProximityControls();
+      }
+
+      const ambientPetals = Array.from({ length: 24 }, () => ({
+        gx: (Math.random() - 0.5) * 16,
+        gy: (Math.random() - 0.5) * 16,
+        z: 5 + Math.random() * 35,
+        phase: Math.random() * Math.PI * 2,
+      }));
+
+      function isBlocked(gx, gy) {
+        if (gx < -9 || gx > 9 || gy < -9 || gy > 9) return true;
+        for (const b of Object.values(BUILDINGS)) {
+          const hx = b.wx / 2 - 0.1;
+          const hy = b.wy / 2 - 0.1;
+          if (gx >= b.gx - hx && gx <= b.gx + hx && gy >= b.gy - hy && gy <= b.gy + hy) {
+            return true;
+          }
+        }
+        return false;
+      }
+
+      function findNearbyBuilding(gx, gy) {
+        let best = null;
+        let bestDist = 2.1;
+        for (const b of Object.values(BUILDINGS)) {
+          const d = Math.hypot(gx - b.doorGx, gy - b.doorGy);
+          if (d < bestDist) {
+            bestDist = d;
+            best = b;
+          }
+        }
+        return best;
+      }
+
+      function updateProximityControls() {
+        const near = shunsui.state === "normal" ? findNearbyBuilding(shunsui.gx, shunsui.gy) : null;
+        shunsui.nearBuilding = near;
+
+        pinLabels.forEach((p) => {
+          p.classList.toggle("pin-active", Boolean(near && p.getAttribute("data-target") === near.id));
+        });
+
+        if (nearHintEl) {
+          nearHintEl.textContent = near ? `(${near.label})` : "";
+        }
+      }
+
+      function stepToward(nextGx, nextGy) {
+        if (shunsui.state !== "normal" || isBlocked(nextGx, nextGy)) return false;
+        spawnSakuraBurst(shunsui.visGx, shunsui.visGy, 5);
+        shunsui.fromGx = shunsui.visGx;
+        shunsui.fromGy = shunsui.visGy;
+        shunsui.toGx = nextGx;
+        shunsui.toGy = nextGy;
+        shunsui.gx = nextGx;
+        shunsui.gy = nextGy;
+        shunsui.hopping = true;
+        shunsui.hopStart = performance.now();
+        shunsui.walkCycle += 1;
+        updateProximityControls();
+        return true;
+      }
+
+      function queueWalkTo(targetGx, targetGy, preferCrossingGx = null) {
+        if (shunsui.state !== "normal") return;
+        const tx = Math.max(-8, Math.min(8, Math.round(targetGx)));
+        const ty = Math.max(-8, Math.min(8, Math.round(targetGy)));
+        const waypoints = [];
+
+        if ((shunsui.gy > 0 && ty < 0) || (shunsui.gy < 0 && ty > 0)) {
+          let crossGx = preferCrossingGx;
+          if (crossGx === null) {
+            const bridgeDist = Math.abs(shunsui.gx - -1) + Math.abs(tx - -1);
+            const stonesDist = Math.abs(shunsui.gx - STEPPING_STONES_GX) + Math.abs(tx - STEPPING_STONES_GX);
+            crossGx = stonesDist <= bridgeDist ? STEPPING_STONES_GX : -1;
+          }
+          waypoints.push({ gx: crossGx, gy: 0 });
+        }
+        waypoints.push({ gx: tx, gy: ty });
+
+        const queue = [];
+        let cx = shunsui.gx;
+        let cy = shunsui.gy;
+
+        for (const wp of waypoints) {
+          let guard = 0;
+          while ((cx !== wp.gx || cy !== wp.gy) && guard < 36) {
+            guard++;
+            const dx = Math.sign(wp.gx - cx);
+            const dy = Math.sign(wp.gy - cy);
+            if (dx !== 0 && !isBlocked(cx + dx, cy) && (cy !== 0 || isSafeRiverCrossing(cx + dx, cy))) {
+              cx += dx;
+            } else if (dy !== 0 && !isBlocked(cx, cy + dy) && (cy + dy !== 0 || isSafeRiverCrossing(cx, cy + dy))) {
+              cy += dy;
+            } else if (dx !== 0 && !isBlocked(cx + dx, cy)) {
+              cx += dx;
+            } else if (dy !== 0 && !isBlocked(cx, cy + dy)) {
+              cy += dy;
+            } else {
+              break;
+            }
+            queue.push({ gx: cx, gy: cy });
+          }
+        }
+
+        shunsui.pathQueue = queue;
+        updateProximityControls();
+      }
+
+      pinLabels.forEach((pin) => {
+        pin.addEventListener("click", (e) => {
+          e.stopPropagation();
+          const target = pin.getAttribute("data-target");
+          const b = target ? BUILDINGS[target] : null;
+          if (!b) return;
+          if (shunsui.nearBuilding && shunsui.nearBuilding.id === b.id && !shunsui.hopping) {
+            openSectionPage(b.id, true);
+          } else {
+            queueWalkTo(b.doorGx, b.doorGy);
+          }
+        });
+      });
+
+      townCanvas?.addEventListener("mousemove", (e) => {
+        const rect = townCanvas.getBoundingClientRect();
+        const { gx, gy } = screenToIso(e.clientX - rect.left, e.clientY - rect.top);
+        hoverSteppingStones = Math.abs(gx - STEPPING_STONES_GX) < 0.72 && Math.abs(gy) < 0.85;
+      });
+
+      townCanvas?.addEventListener("mouseleave", () => {
+        hoverSteppingStones = false;
+      });
+
+      townCanvas?.addEventListener("click", (e) => {
+        if (shunsui.state !== "normal") return;
+        const rect = townCanvas.getBoundingClientRect();
+        const sx = e.clientX - rect.left;
+        const sy = e.clientY - rect.top;
+
+        const charScreen = iso(shunsui.visGx, shunsui.visGy, 18);
+        if (Math.hypot(sx - charScreen.x, sy - charScreen.y) < tileW * 1.0) {
+          shunsui.slashTimer = performance.now();
+          spawnSakuraBurst(shunsui.visGx, shunsui.visGy, 22);
+          return;
+        }
+
+        for (const b of Object.values(BUILDINGS)) {
+          const center = iso(b.gx, b.gy, b.h * 0.5);
+          if (Math.hypot(sx - center.x, sy - center.y) < tileW * 1.6) {
+            queueWalkTo(b.doorGx, b.doorGy);
+            return;
+          }
+        }
+
+        const { gx, gy } = screenToIso(sx, sy);
+        // Clicking the stepping stones crosses to the opposite bank via the stepping stones
+        if (Math.abs(gx - STEPPING_STONES_GX) < 0.72 && Math.abs(gy) < 0.85) {
+          const destGy = shunsui.gy > 0 ? -1 : 1;
+          queueWalkTo(STEPPING_STONES_GX, destGy, STEPPING_STONES_GX);
+          return;
+        }
+
+        if (gx >= -9 && gx <= 9 && gy >= -9 && gy <= 9) {
+          const rx = Math.round(gx);
+          const ry = Math.round(gy);
+          if (ry === 0 && !isSafeRiverCrossing(rx, ry)) {
+            stepToward(rx, ry);
+          } else {
+            queueWalkTo(rx, ry);
+          }
+        }
+      });
+
+      function manualMove(dir) {
+        if (shunsui.state !== "normal") return;
+        shunsui.pathQueue = [];
+        if (shunsui.hopping) return;
+        if (dir === "up") stepToward(shunsui.gx, shunsui.gy - 1);
+        if (dir === "down") stepToward(shunsui.gx, shunsui.gy + 1);
+        if (dir === "left") stepToward(shunsui.gx - 1, shunsui.gy);
+        if (dir === "right") stepToward(shunsui.gx + 1, shunsui.gy);
+      }
+
+      window.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && activeSection) {
+          returnToTown(true);
+          return;
+        }
+        if (activeSection) return;
+
+        const k = e.key.toLowerCase();
+        if (k === "w" || k === "arrowup") {
+          e.preventDefault();
+          manualMove("up");
+        } else if (k === "s" || k === "arrowdown") {
+          e.preventDefault();
+          manualMove("down");
+        } else if (k === "a" || k === "arrowleft") {
+          e.preventDefault();
+          manualMove("left");
+        } else if (k === "d" || k === "arrowright") {
+          e.preventDefault();
+          manualMove("right");
+        } else if (k === "enter") {
+          if (shunsui.nearBuilding) {
+            e.preventDefault();
+            openSectionPage(shunsui.nearBuilding.id, true);
+          }
+        } else if (k === " ") {
+          e.preventDefault();
+          shunsui.slashTimer = performance.now();
+          spawnSakuraBurst(shunsui.visGx, shunsui.visGy, 22);
+        }
+      });
+
+      // ==================== ISOMETRIC DRAWING PRIMITIVES ====================
+      function drawPoly(pts, fill, stroke = null, lw = 1) {
+        ctx.beginPath();
+        pts.forEach((p, i) => (i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y)));
+        ctx.closePath();
+        if (fill) {
+          ctx.fillStyle = fill;
+          ctx.fill();
+        }
+        if (stroke) {
+          ctx.strokeStyle = stroke;
+          ctx.lineWidth = lw;
+          ctx.stroke();
+        }
+      }
+
+      function drawPrism(gx, gy, wx, wy, z0, z1, topCol, leftCol, rightCol, strokeCol = null) {
+        const x0 = gx - wx / 2;
+        const x1 = gx + wx / 2;
+        const y0 = gy - wy / 2;
+        const y1 = gy + wy / 2;
+
+        const t00 = iso(x0, y0, z1);
+        const t10 = iso(x1, y0, z1);
+        const t11 = iso(x1, y1, z1);
+        const t01 = iso(x0, y1, z1);
+
+        const b10 = iso(x1, y0, z0);
+        const b11 = iso(x1, y1, z0);
+        const b01 = iso(x0, y1, z0);
+
+        drawPoly([t01, t11, b11, b01], leftCol, strokeCol);
+        drawPoly([t10, t11, b11, b10], rightCol, strokeCol);
+        drawPoly([t00, t10, t11, t01], topCol, strokeCol);
+      }
+
+      function drawTile(gx, gy, wx, wy, z, fill, stroke = null) {
+        const x0 = gx - wx / 2;
+        const x1 = gx + wx / 2;
+        const y0 = gy - wy / 2;
+        const y1 = gy + wy / 2;
+        drawPoly([iso(x0, y0, z), iso(x1, y0, z), iso(x1, y1, z), iso(x0, y1, z)], fill, stroke);
+      }
+
+      function drawWallWindowLeft(xCenter, yFixed, w, zBottom, zTop, color) {
+        drawPoly(
+          [
+            iso(xCenter - w / 2, yFixed, zTop),
+            iso(xCenter + w / 2, yFixed, zTop),
+            iso(xCenter + w / 2, yFixed, zBottom),
+            iso(xCenter - w / 2, yFixed, zBottom),
+          ],
+          color
+        );
+      }
+
+      function drawWallWindowRight(xFixed, yCenter, w, zBottom, zTop, color) {
+        drawPoly(
+          [
+            iso(xFixed, yCenter - w / 2, zTop),
+            iso(xFixed, yCenter + w / 2, zTop),
+            iso(xFixed, yCenter + w / 2, zBottom),
+            iso(xFixed, yCenter - w / 2, zBottom),
+          ],
+          color
+        );
+      }
+
+      // ==================== LUSH GREENERY, SAKURA TREES, GARDENS & NATURE OBJECTS ====================
+      const GRASS_MEADOWS = [
+        { gx: -6.0, gy: -6.0, wx: 5.4, wy: 5.2, top: "#72c678", side: "#52a358" },
+        { gx: 0.0, gy: -6.4, wx: 4.4, wy: 4.2, top: "#80cf85", side: "#5cad62" },
+        { gx: 6.0, gy: -5.8, wx: 5.4, wy: 5.0, top: "#6bbd72", side: "#4c9952" },
+        { gx: -6.2, gy: 4.2, wx: 5.2, wy: 6.0, top: "#74c67a", side: "#52a358" },
+        { gx: 5.8, gy: 4.8, wx: 5.4, wy: 5.6, top: "#6bbd72", side: "#4c9952" },
+        { gx: -0.2, gy: 6.6, wx: 5.2, wy: 4.2, top: "#7fd184", side: "#5cad62" },
+      ];
+
+      const TREES = [
+        { gx: -1.6, gy: -5.5, s: 1.15, type: "sakura", phase: 0.2 },
+        { gx: 1.6, gy: -5.8, s: 1.2, type: "sakura", phase: 1.4 },
+        { gx: -3.0, gy: 1.8, s: 1.1, type: "sakura", phase: 2.1 },
+        { gx: 1.2, gy: 3.8, s: 1.15, type: "sakura", phase: 0.9 },
+        { gx: -8.2, gy: -3.5, s: 1.05, type: "sakura", phase: 2.8 },
+
+        { gx: -8.6, gy: -6.2, s: 1.1, type: "emerald", phase: 0.5 },
+        { gx: -4.2, gy: -7.8, s: 0.95, type: "lime", phase: 1.7 },
+        { gx: -8.0, gy: -4.8, s: 0.9, type: "emerald", phase: 2.3 },
+        { gx: -2.6, gy: -8.2, s: 1.05, type: "emerald", phase: 0.8 },
+        { gx: 8.2, gy: -7.2, s: 1.15, type: "lime", phase: 1.9 },
+        { gx: 8.3, gy: -3.6, s: 0.95, type: "emerald", phase: 3.0 },
+        { gx: -5.4, gy: -1.0, s: 1.1, type: "emerald", phase: 1.2 },
+        { gx: -8.0, gy: 6.8, s: 1.0, type: "lime", phase: 2.6 },
+        { gx: -3.7, gy: 7.8, s: 0.92, type: "emerald", phase: 0.4 },
+        { gx: 2.6, gy: 7.6, s: 1.05, type: "lime", phase: 1.5 },
+        { gx: 8.0, gy: 2.4, s: 1.0, type: "emerald", phase: 2.9 },
+        { gx: 8.1, gy: 6.8, s: 1.15, type: "emerald", phase: 0.7 },
+
+        { gx: -3.5, gy: -3.8, s: 0.95, type: "amber", phase: 1.1 },
+        { gx: 3.5, gy: 6.8, s: 1.0, type: "amber", phase: 2.4 },
+        { gx: 8.4, gy: 0.8, s: 0.9, type: "amber", phase: 0.3 },
+      ];
+
+      const FLOWER_BEDS = [
+        { gx: -4.5, gy: -4.8, color: "#ff595e" },
+        { gx: -7.5, gy: -6.0, color: "#ffca3a" },
+        { gx: 0.0, gy: -7.5, color: "#ff759f" },
+        { gx: 4.5, gy: -4.2, color: "#c77dff" },
+        { gx: -4.8, gy: 5.5, color: "#ffca3a" },
+        { gx: -7.5, gy: 4.5, color: "#ff595e" },
+        { gx: 4.2, gy: 5.2, color: "#ff759f" },
+        { gx: 1.5, gy: 6.2, color: "#ffca3a" },
+        { gx: -2.2, gy: 6.4, color: "#c77dff" },
+      ];
+
+      const TORII = { gx: 0, gy: -5.0 };
+
+      const LANTERNS = [
+        { gx: -2.2, gy: -1.2 },
+        { gx: 2.2, gy: -1.2 },
+        { gx: -2.2, gy: 1.5 },
+        { gx: 2.2, gy: 1.5 },
+      ];
+
+      const groundBirds = [
+        { gx: -3.2, gy: -6.8, phase: 0 },
+        { gx: 5.2, gy: 2.2, phase: 1.8 },
+        { gx: -5.2, gy: 1.6, phase: 3.1 },
+      ];
+
+      function drawTree(t, isNight, now) {
+        const sway = prefersReducedMotion ? 0 : Math.sin(now * 0.0028 + t.phase) * 0.05;
+        const trunkH = 7 * TREE_HEIGHT_SCALE * t.s;
+        const h = 17 * TREE_HEIGHT_SCALE * t.s;
+        drawPrism(t.gx, t.gy, 0.26, 0.26, 0, trunkH, "#7f5539", "#583101", "#3d2200");
+
+        let topC, leftC, rightC, crownTop, crownLeft;
+        if (t.type === "sakura") {
+          topC = isNight ? "#c95b82" : "#ff9ebb";
+          leftC = isNight ? "#9e3f62" : "#ff759f";
+          rightC = isNight ? "#782b47" : "#e05780";
+          crownTop = isNight ? "#e07a9e" : "#ffb3c6";
+          crownLeft = topC;
+        } else if (t.type === "amber") {
+          topC = isNight ? "#c27829" : "#ffb74d";
+          leftC = isNight ? "#9c5b16" : "#fb8c00";
+          rightC = isNight ? "#754108" : "#e65100";
+          crownTop = isNight ? "#d98e3b" : "#ffd54f";
+          crownLeft = topC;
+        } else if (t.type === "lime") {
+          topC = isNight ? "#3b8754" : "#80ed99";
+          leftC = isNight ? "#2b693f" : "#57cc99";
+          rightC = isNight ? "#1d4d2c" : "#38a3a5";
+          crownTop = isNight ? "#4ea36a" : "#a3f7b5";
+          crownLeft = topC;
+        } else {
+          topC = isNight ? "#2d6a4f" : "#52b788";
+          leftC = isNight ? "#1b4332" : "#40916c";
+          rightC = isNight ? "#122e22" : "#2d6a4f";
+          crownTop = isNight ? "#40916c" : "#74c69d";
+          crownLeft = topC;
+        }
+
+        drawPrism(
+          t.gx + sway,
+          t.gy - sway,
+          0.95 * t.s,
+          0.95 * t.s,
+          trunkH,
+          trunkH + h * 0.72,
+          topC,
+          leftC,
+          rightC
+        );
+        drawPrism(
+          t.gx + sway * 1.3,
+          t.gy - sway * 1.3,
+          0.62 * t.s,
+          0.62 * t.s,
+          trunkH + h * 0.72,
+          trunkH + h,
+          crownTop,
+          crownLeft,
+          leftC
+        );
+      }
+
+      function drawToriiGate(gx, gy) {
+        drawPrism(gx - 0.7, gy, 0.2, 0.2, 0, 26, "#e63946", "#d62828", "#9b1b1b");
+        drawPrism(gx + 0.7, gy, 0.2, 0.2, 0, 26, "#e63946", "#d62828", "#9b1b1b");
+        drawPrism(gx, gy, 1.8, 0.18, 19, 22, "#e63946", "#d62828", "#9b1b1b");
+        drawPrism(gx, gy, 2.2, 0.28, 25, 28, "#2b2d42", "#e63946", "#9b1b1b");
+      }
+
+      function drawBuilding(b, isNight, now) {
+        const wallLeft = isNight ? "#335482" : "#e2ecf7";
+        const wallRight = isNight ? "#223b5e" : "#b5cbe3";
+        const winCol = isNight ? "#ffd166" : "#fff9db";
+
+        if (b.id === "about") {
+          drawPrism(b.gx, b.gy, b.wx, b.wy, 0, b.h, "#e76f51", wallLeft, wallRight);
+          drawPrism(b.gx, b.gy, b.wx + 0.35, b.wy + 0.35, b.h, b.h + 7, "#e76f51", "#d1583b", "#a84128");
+          drawPrism(b.gx, b.gy, b.wx * 0.64, b.wy * 0.64, b.h + 7, b.h + 13, "#f4a261", "#e76f51", "#d1583b");
+          drawWallWindowLeft(b.gx - 0.3, b.gy + b.wy / 2 + 0.01, 0.55, 0, 22, "#eab64d");
+          drawWallWindowLeft(b.gx + 0.55, b.gy + b.wy / 2 + 0.01, 0.55, 10, 24, winCol);
+          drawWallWindowRight(b.gx + b.wx / 2 + 0.01, b.gy, 0.7, 10, 24, winCol);
+        } else if (b.id === "research") {
+          drawPrism(b.gx, b.gy, b.wx, b.wy, 0, b.h, "#e8f1fa", wallLeft, wallRight);
+          drawPrism(b.gx, b.gy, b.wx * 0.78, b.wy * 0.78, b.h, b.h + 4.5, "#1d4ed8", "#1e40af", "#1e3a8a", "#93c5fd");
+          for (let i = -0.8; i <= 0.8; i += 0.8) {
+            drawWallWindowLeft(b.gx + i, b.gy + b.wy / 2 + 0.01, 0.44, 6, b.h - 6, "#bae6fd");
+          }
+          const antBase = iso(b.gx + 0.9, b.gy - 0.9, b.h + 4.5);
+          const antTop = iso(b.gx + 0.9, b.gy - 0.9, b.h + 23);
+          ctx.beginPath();
+          ctx.moveTo(antBase.x, antBase.y);
+          ctx.lineTo(antTop.x, antTop.y);
+          ctx.strokeStyle = "#1e3a5f";
+          ctx.lineWidth = 2;
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.arc(antTop.x, antTop.y, 4 + Math.sin(now * 0.008) * 1.2, 0, Math.PI * 2);
+          ctx.fillStyle = "#ffbe0b";
+          ctx.fill();
+        } else if (b.id === "experience") {
+          drawPrism(b.gx, b.gy, b.wx, b.wy, 0, b.h, "#2a9d8f", wallLeft, wallRight);
+          drawPrism(b.gx, b.gy, b.wx + 0.3, b.wy + 0.3, b.h, b.h + 6, "#2a9d8f", "#21867a", "#17635a");
+          drawPrism(b.gx, b.gy, b.wx * 0.7, b.wy * 0.7, b.h + 6, b.h + 13, "#48cae4", "#2a9d8f", "#21867a");
+
+          for (let z = 10; z <= b.h - 14; z += 14) {
+            for (let offset of [-0.6, 0, 0.6]) {
+              drawWallWindowLeft(b.gx + offset, b.gy + b.wy / 2 + 0.01, 0.34, z, z + 9, winCol);
+              drawWallWindowRight(b.gx + b.wx / 2 + 0.01, b.gy + offset, 0.34, z, z + 9, winCol);
+            }
+          }
+          const poleBot = iso(b.gx, b.gy, b.h + 13);
+          const poleTop = iso(b.gx, b.gy, b.h + 30);
+          ctx.beginPath();
+          ctx.moveTo(poleBot.x, poleBot.y);
+          ctx.lineTo(poleTop.x, poleTop.y);
+          ctx.strokeStyle = "#1e3a5f";
+          ctx.lineWidth = 2;
+          ctx.stroke();
+          drawPoly(
+            [
+              poleTop,
+              { x: poleTop.x + 16, y: poleTop.y + 3 + Math.sin(now * 0.009) * 2.5 },
+              { x: poleTop.x, y: poleTop.y + 9 },
+            ],
+            "#ffbe0b"
+          );
+        } else if (b.id === "cv") {
+          drawPrism(b.gx, b.gy, b.wx, b.wy, 0, b.h, "#3a6ea5", wallLeft, wallRight);
+          drawPrism(b.gx, b.gy, b.wx + 0.26, b.wy + 0.26, b.h, b.h + 5, "#3a6ea5", "#2b5685", "#1d3e63");
+          drawPrism(b.gx, b.gy, 1.15, 0.95, b.h + 5, b.h + 9, "#fef3c7", "#fde68a", "#f59e0b");
+          for (let off of [-0.25, 0, 0.25]) {
+            drawTile(b.gx, b.gy + off, 0.72, 0.08, b.h + 9.2, "#334155");
+          }
+          for (let off of [-0.55, 0, 0.55]) {
+            drawWallWindowLeft(b.gx + off, b.gy + b.wy / 2 + 0.01, 0.34, 8, 23, winCol);
+          }
+        } else if (b.id === "blog") {
+          drawPrism(b.gx, b.gy, b.wx, b.wy, 0, b.h, "#4975ad", wallLeft, wallRight);
+          drawPrism(b.gx, b.gy, b.wx + 0.22, b.wy + 0.22, b.h, b.h + 5, "#5884bc", "#345c8f", "#24436c");
+          drawPrism(b.gx, b.gy, 0.9, 0.75, b.h + 5, b.h + 8, "#fef3c7", "#fde68a", "#eab64d");
+        }
+      }
+
+      // ==================== FULL SHUNSUI KYORAKU (WITH DROWNING & CAR HIT) ====================
+      function drawShunsuiKyoraku(now) {
+        const gx = shunsui.visGx;
+        const gy = shunsui.visGy;
+        const z = shunsui.hopZ - shunsui.sinkZ;
+
+        if (shunsui.sinkZ < 10) {
+          const shadow = iso(gx, gy, 0.8);
+          ctx.beginPath();
+          ctx.ellipse(shadow.x, shadow.y, 10, 5.2, 0, 0, Math.PI * 2);
+          ctx.fillStyle = "rgba(15, 23, 42, 0.32)";
+          ctx.fill();
+        }
+
+        if (shunsui.state === "drowning" && shunsui.sinkZ > 22) {
+          const hatZ = Math.sin(now * 0.02) * 1.5;
+          drawPrism(gx, gy, 0.88, 0.88, hatZ, hatZ + 2.5, "#f3c66f", "#dfa848", "#b88228");
+          drawPrism(gx, gy, 0.58, 0.58, hatZ + 2.5, hatZ + 5, "#f7d488", "#e5b55b", "#c49237");
+          return;
+        }
+
+        const swing = shunsui.hopping
+          ? Math.sin(((now - shunsui.hopStart) / 180) * Math.PI * 2) * 0.16
+          : 0;
+        const isSlashing = now - shunsui.slashTimer < 900;
+
+        if (z + 3 > 0) {
+          drawPrism(gx - 0.12 + swing, gy - 0.08, 0.18, 0.18, Math.max(0, z), z + 3, "#ffffff", "#e2e8f0", "#cbd5e1");
+          drawPrism(gx + 0.12 - swing, gy + 0.08, 0.18, 0.18, Math.max(0, z), z + 3, "#ffffff", "#e2e8f0", "#cbd5e1");
+        }
+        if (z + 10 > 0) {
+          drawPrism(gx - 0.12 + swing, gy - 0.08, 0.24, 0.24, Math.max(0, z + 3), z + 10, "#1e293b", "#0f172a", "#020617");
+          drawPrism(gx + 0.12 - swing, gy + 0.08, 0.24, 0.24, Math.max(0, z + 3), z + 10, "#1e293b", "#0f172a", "#020617");
+        }
+
+        if (z + 14 > 0) {
+          drawPrism(gx, gy, 0.44, 0.38, Math.max(0, z + 10), z + 12, "#f8fafc", "#e2e8f0", "#94a3b8");
+          drawPrism(gx - 0.28, gy + 0.18, 0.55, 0.1, Math.max(0, z + 11), z + 13, "#7f1d1d", "#991b1b", "#450a0a");
+          drawPrism(gx - 0.24, gy + 0.24, 0.48, 0.1, Math.max(0, z + 12), z + 14, "#eab64d", "#ca8a04", "#854d0e");
+        }
+
+        if (z + 21.5 > 0) {
+          drawPrism(gx, gy, 0.44, 0.36, Math.max(0, z + 12), z + 21, "#1e293b", "#0f172a", "#020617");
+          const haoriFlutter = shunsui.hopping ? 0.06 : 0;
+          drawPrism(
+            gx - 0.03,
+            gy - 0.03,
+            0.54 + haoriFlutter,
+            0.46 + haoriFlutter,
+            Math.max(0, z + 12),
+            z + 21.5,
+            "#ff9ebb",
+            "#ff759f",
+            "#e05780"
+          );
+          const flowerPt = iso(gx + 0.14, gy + 0.24, z + 17);
+          ctx.fillStyle = "#ffffff";
+          ctx.fillRect(flowerPt.x - 3, flowerPt.y - 3, 5, 5);
+          ctx.fillStyle = "#d90429";
+          ctx.fillRect(flowerPt.x - 2, flowerPt.y - 2, 3, 3);
+        }
+
+        const panicRaise = shunsui.state === "drowning" ? 9 : 0;
+        const armRaise = isSlashing ? Math.abs(Math.sin(now * 0.025)) * 8 + 5 : panicRaise;
+        if (z + 21 > 0) {
+          drawPrism(
+            gx - 0.32 - swing,
+            gy - 0.12,
+            0.18,
+            0.18,
+            Math.max(0, z + 13 + panicRaise * 0.4),
+            z + 21 + panicRaise,
+            "#ff9ebb",
+            "#ff759f",
+            "#e05780"
+          );
+          drawPrism(
+            gx + 0.32 + swing,
+            gy + 0.12,
+            0.18,
+            0.18,
+            Math.max(0, z + 13 + armRaise * 0.4),
+            z + 21 + armRaise,
+            "#ff9ebb",
+            "#ff759f",
+            "#e05780"
+          );
+        }
+
+        if (isSlashing) {
+          const slashCenter = iso(gx, gy, z + 18);
+          ctx.save();
+          ctx.beginPath();
+          ctx.arc(slashCenter.x, slashCenter.y, tileW * 1.15, -0.4, Math.PI * 1.1);
+          ctx.strokeStyle = "rgba(255, 117, 159, 0.85)";
+          ctx.lineWidth = 4;
+          ctx.stroke();
+          ctx.restore();
+        }
+
+        const headBob = Math.sin(now * 0.006) * 0.7;
+        if (z + 28.5 + headBob > 0) {
+          drawPrism(gx, gy, 0.38, 0.38, Math.max(0, z + 21.5 + headBob), z + 28.5 + headBob, "#3b2314", "#fde68a", "#f59e0b");
+          drawPrism(gx - 0.08, gy - 0.08, 0.4, 0.4, Math.max(0, z + 24 + headBob), z + 29 + headBob, "#3b2314", "#2b180c", "#1a0e07");
+        }
+
+        drawPrism(gx, gy, 0.88, 0.88, Math.max(0, z + 28.5 + headBob), Math.max(2.5, z + 31 + headBob), "#f3c66f", "#dfa848", "#b88228");
+        drawPrism(gx, gy, 0.58, 0.58, Math.max(2.5, z + 31 + headBob), Math.max(5, z + 33.5 + headBob), "#f7d488", "#e5b55b", "#c49237");
+        drawPrism(gx, gy, 0.28, 0.28, Math.max(5, z + 33.5 + headBob), Math.max(7, z + 35.5 + headBob), "#fae0a0", "#f3c66f", "#dfa848");
+      }
+
+      // ==================== MAIN RENDER LOOP ====================
+      function renderTown(now) {
+        if (!ctx || activeSection) return;
+        ctx.clearRect(0, 0, W, H);
+
+        const isNight = root.getAttribute("data-theme") === "night";
+        currentHoverZ = prefersReducedMotion ? 0 : Math.sin(now * 0.0024) * 3.5;
+
+        if (shunsui.state === "drowning") {
+          const elapsed = now - shunsui.stateStart;
+          shunsui.sinkZ = Math.min(30, (elapsed / 650) * 30);
+          if (elapsed > 950) respawnAtBase();
+        } else if (shunsui.state === "hit") {
+          const elapsed = now - shunsui.stateStart;
+          const t = Math.min(1, elapsed / 650);
+          shunsui.hopZ = Math.sin(t * Math.PI) * 38;
+          shunsui.visGx += 0.06;
+          shunsui.visGy += 0.06;
+          if (elapsed > 680) respawnAtBase();
+        } else if (shunsui.hopping) {
+          const t = Math.min(1, (now - shunsui.hopStart) / 175);
+          const ease = 1 - Math.pow(1 - t, 3);
+          shunsui.visGx = shunsui.fromGx + (shunsui.toGx - shunsui.fromGx) * ease;
+          shunsui.visGy = shunsui.fromGy + (shunsui.toGy - shunsui.fromGy) * ease;
+          shunsui.hopZ = Math.sin(t * Math.PI) * 16;
+
+          if (t >= 1) {
+            shunsui.hopping = false;
+            shunsui.visGx = shunsui.gx;
+            shunsui.visGy = shunsui.gy;
+            shunsui.hopZ = 0;
+
+            if (shunsui.gy === 0 && !isSafeRiverCrossing(shunsui.gx, shunsui.gy)) {
+              triggerDrown(now);
+            } else {
+              spawnSakuraBurst(shunsui.gx, shunsui.gy, 6);
+              updateProximityControls();
+            }
+          }
+        } else if (shunsui.pathQueue.length > 0) {
+          const next = shunsui.pathQueue.shift();
+          stepToward(next.gx, next.gy);
+        } else if (shunsui.gy === 0) {
+          const onFixedCrossing =
+            (shunsui.visGx >= -1.6 && shunsui.visGx <= 0.4) ||
+            Math.abs(shunsui.visGx - STEPPING_STONES_GX) < 0.65;
+          if (!onFixedCrossing) {
+            let ridingLog = null;
+            for (const log of riverLogs) {
+              if (Math.abs(shunsui.visGx - log.gx) < log.len * 0.55) {
+                ridingLog = log;
+                break;
+              }
+            }
+            if (ridingLog) {
+              if (!prefersReducedMotion) {
+                shunsui.visGx += ridingLog.speed;
+                shunsui.gx = Math.round(shunsui.visGx);
+              }
+              if (shunsui.visGx > 8.5 || shunsui.visGx < -8.5) triggerDrown(now);
+            } else if (!isSafeRiverCrossing(shunsui.visGx, 0)) {
+              triggerDrown(now);
+            }
+          }
+        }
+
+        // 1. Anchored Ground Drop Shadow (breathes subtly as platform hovers above)
+        const shadowScale = 1 - currentHoverZ * 0.01;
+        const shadowCenter = iso(0, 0, -72 - currentHoverZ);
+        ctx.save();
+        ctx.beginPath();
+        ctx.ellipse(
+          shadowCenter.x,
+          shadowCenter.y + 14,
+          tileW * 15.2 * shadowScale,
+          tileH * 13.2 * shadowScale,
+          0,
+          0,
+          Math.PI * 2
+        );
+        ctx.fillStyle = isNight ? "rgba(3, 8, 18, 0.42)" : "rgba(102, 152, 204, 0.17)";
+        ctx.fill();
+        ctx.restore();
+
+        // 5 Pixel Fire Thruster Pods mounted along the visible underside rim of the hovering platform
+        const THRUSTERS = [
+          { gx: -7.8, gy: 8.6, size: 1.45, phase: 0.0 },
+          { gx: 0.0, gy: 8.7, size: 1.65, phase: 1.3 },
+          { gx: 8.6, gy: 8.6, size: 2.1, phase: 2.5 }, // Main front-center corner thruster
+          { gx: 8.7, gy: 0.0, size: 1.65, phase: 3.7 },
+          { gx: 8.6, gy: -7.8, size: 1.45, phase: 4.9 },
+        ];
+
+        THRUSTERS.forEach((th) => {
+          const pulse = Math.sin(now * 0.028 + th.phase);
+          const pulse2 = Math.cos(now * 0.042 + th.phase * 1.7);
+          const s = th.size;
+
+          // Warm radial thruster heat glow in the air below
+          const glowPt = iso(th.gx, th.gy, -38);
+          const grad = ctx.createRadialGradient(glowPt.x, glowPt.y, 3, glowPt.x, glowPt.y, tileW * s * 1.3);
+          grad.addColorStop(0, "rgba(255, 190, 11, 0.46)");
+          grad.addColorStop(0.55, "rgba(251, 86, 7, 0.2)");
+          grad.addColorStop(1, "rgba(251, 86, 7, 0)");
+          ctx.fillStyle = grad;
+          ctx.beginPath();
+          ctx.arc(glowPt.x, glowPt.y, tileW * s * 1.3, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Descending pixel fire spark cubes shooting downward from the jet
+          for (let k = 0; k < 5; k++) {
+            const prog = (now * 0.0052 + th.phase * 0.3 + k * 0.2) % 1;
+            const sparkZ = -30 - prog * (32 + s * 7);
+            const jitterX = Math.sin(now * 0.02 + k * 2.1 + th.phase) * 0.22 * s;
+            const jitterY = Math.cos(now * 0.02 + k * 1.7 + th.phase) * 0.22 * s;
+            const spPt = iso(th.gx + jitterX, th.gy + jitterY, sparkZ);
+            const pSize = Math.max(3, (1 - prog) * 6.5 * (s * 0.65));
+            const colors = ["#fff3b0", "#ffbe0b", "#fb5607", "#ff006e"];
+            ctx.save();
+            ctx.globalAlpha = Math.max(0, (1 - prog) * 0.92);
+            ctx.fillStyle = colors[k % colors.length];
+            ctx.fillRect(
+              Math.round(spPt.x - pSize / 2),
+              Math.round(spPt.y - pSize / 2),
+              Math.round(pSize),
+              Math.round(pSize)
+            );
+            ctx.restore();
+          }
+
+          // Stage 3 (Lowest outer red-orange pixel flame tip)
+          const tipBottom = -49 - s * 6.5 + pulse * 4.5;
+          drawPrism(th.gx, th.gy, s * 0.42, s * 0.42, tipBottom, -36, "#fb5607", "#ff0055", "#d90429");
+
+          // Stage 2 (Middle blazing orange-gold pixel flame block)
+          const midBottom = -39 - s * 3.8 + pulse2 * 3.2;
+          drawPrism(th.gx, th.gy, s * 0.68, s * 0.68, midBottom, -28, "#ffbe0b", "#fb5607", "#e85d04");
+
+          // Stage 1 (Upper white-hot / yellow pixel core right out of the nozzle)
+          drawPrism(th.gx, th.gy, s * 0.9, s * 0.9, -30 + pulse * 1.6, -22, "#ffffff", "#fff3b0", "#ffbe0b");
+
+          // Glowing exhaust rim ring + Armored Voxel Thruster Nozzle Housing attached to platform underside
+          drawPrism(th.gx, th.gy, s * 1.05, s * 1.05, -24, -21, "#fb5607", "#ffbe0b", "#e85d04");
+          drawPrism(th.gx, th.gy, s * 1.18, s * 1.18, -21, -14, "#475569", "#283548", "#141d2b", "#64748b");
+        });
+
+        // 2. Main Expanded Isometric Platform Structure (19x19 tile area)
+        drawPrism(
+          0,
+          0,
+          GRID_RADIUS * 2,
+          GRID_RADIUS * 2,
+          -15,
+          0,
+          isNight ? "#223859" : "#c5daf0",
+          isNight ? "#162740" : "#89a9ce",
+          isNight ? "#0f1c30" : "#6688b0",
+          isNight ? "rgba(155, 195, 242, 0.18)" : "#96b5d8"
+        );
+
+        // 3. Lush Green Grass Meadow Zones across the Platform
+        GRASS_MEADOWS.forEach((m) => {
+          drawPrism(
+            m.gx,
+            m.gy,
+            m.wx,
+            m.wy,
+            0,
+            1.6,
+            isNight ? "#24543d" : m.top,
+            isNight ? "#1a3d2c" : m.side,
+            isNight ? "#122b1f" : "#3b8242"
+          );
+        });
+
+        // Subtle tile grid lines
+        const gridCol = isNight ? "rgba(160, 198, 242, 0.06)" : "rgba(74, 110, 154, 0.11)";
+        for (let g = -9; g <= 9; g++) {
+          const p1 = iso(g, -9.5, 0.2);
+          const p2 = iso(g, 9.5, 0.2);
+          ctx.beginPath();
+          ctx.moveTo(p1.x, p1.y);
+          ctx.lineTo(p2.x, p2.y);
+          ctx.strokeStyle = gridCol;
+          ctx.lineWidth = 1;
+          ctx.stroke();
+
+          const q1 = iso(-9.5, g, 0.2);
+          const q2 = iso(9.5, g, 0.2);
+          ctx.beginPath();
+          ctx.moveTo(q1.x, q1.y);
+          ctx.lineTo(q2.x, q2.y);
+          ctx.stroke();
+        }
+
+        // 4. Turquoise Canal River (gy === 0) with Lotus Lily Pads & Floating Wooden Logs
+        drawTile(0, 0, GRID_RADIUS * 2 - 0.1, 1.4, 0.5, isNight ? "#1b6ca8" : "#48cae4");
+        const waveShift = (now * 0.0022) % 1;
+        for (let rx = -8; rx <= 8; rx += 2) {
+          drawTile(rx + waveShift * 0.8, 0, 0.9, 0.14, 0.7, "rgba(255, 255, 255, 0.48)");
+        }
+
+        lilyPads.forEach((lp) => {
+          drawTile(lp.gx, lp.gy, 0.62, 0.62, 0.8, "#52b788");
+          if (lp.hasLotus) {
+            drawPrism(lp.gx, lp.gy, 0.24, 0.24, 0.8, 2.5, "#ff759f", "#ff9ebb", "#e05780");
+          }
+        });
+
+        riverLogs.forEach((log, idx) => {
+          if (!prefersReducedMotion) {
+            log.gx += log.speed;
+            if (log.gx > 7.8) log.gx = -7.8;
+          }
+          const logBob = prefersReducedMotion ? 0 : Math.sin(now * 0.004 + idx * 2.1) * 0.55;
+          const logWy = 0.42 * LOG_THICK_SCALE;
+          const logH = 2.3 * LOG_THICK_SCALE;
+          drawPrism(log.gx, log.gy, log.len, logWy, 0.5 + logBob, 0.5 + logH + logBob, "#b47b44", "#8d5b2c", "#6f451f");
+        });
+
+        // Stepping Stones Path across the Canal at gx = 3 (5 flat isometric stones)
+        STEPPING_STONES.forEach((st) => {
+          const basePt = iso(st.gx, st.gy, 0.65);
+
+          // Subtle water shadow underneath each stone
+          ctx.save();
+          ctx.beginPath();
+          ctx.ellipse(basePt.x, basePt.y + 1.5, tileW * st.wx * 0.72, tileH * st.wy * 1.15, 0, 0, Math.PI * 2);
+          ctx.fillStyle = isNight ? "rgba(5, 18, 36, 0.45)" : "rgba(18, 68, 102, 0.24)";
+          ctx.fill();
+
+          // Subtle water ripple ring around each stone (static under prefers-reduced-motion)
+          const ripplePhase = prefersReducedMotion ? 0.35 : (Math.sin(now * 0.0028 + st.phase) + 1) * 0.5;
+          const rippleScale = 0.85 + ripplePhase * 0.32;
+          ctx.beginPath();
+          ctx.ellipse(
+            basePt.x,
+            basePt.y + 0.5,
+            tileW * st.wx * 0.84 * rippleScale,
+            tileH * st.wy * 1.32 * rippleScale,
+            0,
+            0,
+            Math.PI * 2
+          );
+          ctx.strokeStyle = isNight
+            ? `rgba(144, 213, 255, ${0.26 - ripplePhase * 0.14})`
+            : `rgba(255, 255, 255, ${0.52 - ripplePhase * 0.26})`;
+          ctx.lineWidth = 1.2;
+          ctx.stroke();
+          ctx.restore();
+
+          // Flat voxel stone slab matching existing muted slate/stone palette
+          const stoneTop = hoverSteppingStones
+            ? (isNight ? "#8aa8cc" : "#eef6ff")
+            : (isNight ? "#6a82a1" : "#d3dfec");
+          const stoneLeft = isNight ? "#485e7a" : "#9db1c7";
+          const stoneRight = isNight ? "#32445c" : "#788fa8";
+          const stoneStroke = hoverSteppingStones
+            ? (isNight ? "#ffd166" : "#32547d")
+            : (isNight ? "rgba(180, 210, 245, 0.28)" : "rgba(74, 102, 136, 0.32)");
+          drawPrism(st.gx, st.gy, st.wx, st.wy, 0.45, 1.75, stoneTop, stoneLeft, stoneRight, stoneStroke);
+        });
+
+        for (let i = waterRings.length - 1; i >= 0; i--) {
+          const wr = waterRings[i];
+          const pt = iso(wr.gx, wr.gy, 1.0);
+          ctx.beginPath();
+          ctx.ellipse(pt.x, pt.y, wr.r * 2.2, wr.r * 1.1, 0, 0, Math.PI * 2);
+          ctx.strokeStyle = `rgba(255, 255, 255, ${wr.alpha})`;
+          ctx.lineWidth = 2;
+          ctx.stroke();
+          wr.r += 0.55;
+          wr.alpha -= 0.025;
+          if (wr.alpha <= 0) waterRings.splice(i, 1);
+        }
+
+        // 5. Intersecting Crossy-Road Streets & Crosswalks
+        const roadCol = isNight ? "#1b2e4b" : "#5678a4";
+        drawTile(0, -2, GRID_RADIUS * 2 - 0.1, 1.45, 0.5, roadCol);
+        for (let rx = -8.5; rx <= 8.5; rx += 1.4) {
+          drawTile(rx, -2, 0.55, 0.12, 0.7, "rgba(255, 255, 255, 0.7)");
+        }
+
+        drawTile(-1, 0, 1.45, GRID_RADIUS * 2 - 0.1, 0.5, roadCol);
+        for (let ry = -8.5; ry <= 8.5; ry += 1.4) {
+          drawTile(-1, ry, 0.12, 0.55, 0.7, "rgba(255, 255, 255, 0.7)");
+        }
+
+        for (let s = -0.5; s <= 0.5; s += 0.25) {
+          drawTile(-1 + s, -1.1, 0.12, 0.5, 0.8, "#ffffff");
+          drawTile(0.1, -2 + s, 0.5, 0.12, 0.8, "#ffffff");
+        }
+
+        // Arched Wooden & Stone Bridge across the Canal
+        drawPrism(-0.6, 0, 2.0, 1.6, 0, 3.8, "#e6ccb2", "#ddb892", "#b08968", "#7f5539");
+
+        // Glowing Entrance Pads in front of each building
+        Object.values(BUILDINGS).forEach((b) => {
+          const isNear = shunsui.nearBuilding && shunsui.nearBuilding.id === b.id;
+          const pulse = 0.5 + 0.35 * Math.sin(now * 0.007);
+          const padCol = isNear
+            ? `rgba(255, 117, 159, ${0.65 + pulse * 0.3})`
+            : "rgba(255, 117, 159, 0.28)";
+          drawTile(b.doorGx, b.doorGy, 0.95, 0.95, 1.8, padCol, "#ff759f");
+        });
+
+        shunsui.pathQueue.forEach((step) => {
+          drawTile(step.gx, step.gy, 0.36, 0.36, 1.9, "rgba(255, 117, 159, 0.85)");
+        });
+
+        // 6. Collect & Depth-Sort All 3D Objects
+        const renderables = [];
+
+        Object.values(BUILDINGS).forEach((b) => {
+          renderables.push({
+            depth: b.gx + b.gy,
+            draw: () => drawBuilding(b, isNight, now),
+          });
+        });
+
+        TREES.forEach((t) => {
+          renderables.push({
+            depth: t.gx + t.gy,
+            draw: () => drawTree(t, isNight, now),
+          });
+        });
+
+        FLOWER_BEDS.forEach((f) => {
+          renderables.push({
+            depth: f.gx + f.gy,
+            draw: () => {
+              drawPrism(f.gx, f.gy, 0.65, 0.65, 1.6, 4.2, "#40916c", "#2d6a4f", "#1b4332");
+              drawPrism(f.gx - 0.14, f.gy - 0.1, 0.22, 0.22, 4.2, 6.2, f.color, f.color, f.color);
+              drawPrism(f.gx + 0.15, f.gy + 0.12, 0.22, 0.22, 4.2, 6.2, "#ffffff", "#f8fafc", "#e2e8f0");
+            },
+          });
+        });
+
+        renderables.push({
+          depth: TORII.gx + TORII.gy,
+          draw: () => drawToriiGate(TORII.gx, TORII.gy),
+        });
+
+        LANTERNS.forEach((l) => {
+          renderables.push({
+            depth: l.gx + l.gy,
+            draw: () => {
+              drawPrism(l.gx, l.gy, 0.22, 0.22, 0, 12, "#94a3b8", "#64748b", "#475569");
+              drawPrism(l.gx, l.gy, 0.38, 0.38, 12, 17, "#fef08a", "#facc15", "#ca8a04");
+              drawPrism(l.gx, l.gy, 0.48, 0.48, 17, 20, "#94a3b8", "#64748b", "#475569");
+            },
+          });
+        });
+
+        groundBirds.forEach((gb) => {
+          const hop = Math.max(0, Math.sin(now * 0.008 + gb.phase)) * 4;
+          renderables.push({
+            depth: gb.gx + gb.gy,
+            draw: () => {
+              drawPrism(gb.gx, gb.gy, 0.26, 0.26, 1.6 + hop, 6.6 + hop, "#ffffff", "#e2e8f0", "#cbd5e1");
+              drawPrism(gb.gx + 0.12, gb.gy, 0.12, 0.12, 3.6 + hop, 5.4 + hop, "#f97316", "#ea580c", "#c2410c");
+            },
+          });
+        });
+
+        cars.forEach((car) => {
+          if (!prefersReducedMotion) {
+            if (car.axis === "x") {
+              car.gx += car.speed;
+              if (car.gx > 8.6) car.gx = -8.6;
+            } else {
+              car.gy += car.speed;
+              if (car.gy < -8.6) car.gy = 8.6;
+            }
+          }
+
+          const hitDx = car.axis === "x" ? 0.9 : 0.66;
+          const hitDy = car.axis === "x" ? 0.66 : 0.9;
+          if (
+            shunsui.state === "normal" &&
+            Math.abs(car.gx - shunsui.visGx) < hitDx &&
+            Math.abs(car.gy - shunsui.visGy) < hitDy
+          ) {
+            triggerCarHit(now);
+          }
+
+          const bounce = prefersReducedMotion ? 0 : Math.abs(Math.sin(now * 0.018 + car.gx)) * 1.2;
+          renderables.push({
+            depth: car.gx + car.gy,
+            draw: () => {
+              const wx = (car.axis === "x" ? 0.9 : 0.58) * CAR_SCALE;
+              const wy = (car.axis === "x" ? 0.58 : 0.9) * CAR_SCALE;
+              const bodyH = 8 * CAR_SCALE;
+              const topH = 13 * CAR_SCALE;
+              drawPrism(car.gx, car.gy, wx, wy, bounce, bounce + bodyH, car.color, "#28466e", "#193052");
+              drawPrism(car.gx, car.gy, wx * 0.58, wy * 0.58, bounce + bodyH, bounce + topH, car.roof, "#93c5fd", "#60a5fa");
+            },
+          });
+        });
+
+        renderables.push({
+          depth: shunsui.visGx + shunsui.visGy + 0.05,
+          draw: () => drawShunsuiKyoraku(now),
+        });
+
+        renderables.sort((a, b) => a.depth - b.depth);
+        renderables.forEach((r) => r.draw());
+
+        // 7. Ambient Falling Sakura Petals & Splash/Slash Particles
+        ambientPetals.forEach((ap) => {
+          ap.z -= 0.12;
+          ap.gx += Math.sin(now * 0.002 + ap.phase) * 0.012;
+          if (ap.z < 1) {
+            ap.z = 38;
+            ap.gx = (Math.random() - 0.5) * 16;
+            ap.gy = (Math.random() - 0.5) * 16;
+          }
+          const pt = iso(ap.gx, ap.gy, ap.z);
+          ctx.fillStyle = "rgba(255, 145, 179, 0.8)";
+          ctx.fillRect(pt.x - 1.5, pt.y - 1.5, 3, 3);
+        });
+
+        for (let i = particles.length - 1; i >= 0; i--) {
+          const p = particles[i];
+          p.gx += p.vx;
+          p.gy += p.vy;
+          p.z += p.vz;
+          p.alpha -= 0.024;
+          if (p.alpha <= 0) {
+            particles.splice(i, 1);
+            continue;
+          }
+          const pt = iso(p.gx, p.gy, p.z);
+          ctx.save();
+          ctx.globalAlpha = Math.max(0, p.alpha);
+          ctx.fillStyle = p.color || "#ff759f";
+          ctx.fillRect(pt.x - p.size / 2, pt.y - p.size / 2, p.size, p.size);
+          ctx.restore();
+        }
+
+        // 8. Sync Floating Pin Labels
+        pinLabels.forEach((pin) => {
+          const id = pin.getAttribute("data-target");
+          const b = id ? BUILDINGS[id] : null;
+          if (!b) return;
+          const anchor = iso(b.gx, b.gy, b.h + 22);
+          pin.style.left = `${anchor.x}px`;
+          pin.style.top = `${anchor.y}px`;
+        });
+      }
+
+      function tick(now) {
+        renderSky(now);
+        renderTown(now);
+        requestAnimationFrame(tick);
+      }
+
+      if (!openHashRoute(window.location.hash)) {
+        updateProximityControls();
+      }
+
+      requestAnimationFrame(tick);
+    })();
+  </script>
+</body>
+</html>
