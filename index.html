@@ -1529,7 +1529,6 @@
         },
       };
 
-      const CHAI_STALL = { gx: 1, gy: 2 };
       const CAR_SCALE = 1.4;
       const LOG_LEN_SCALE = 1.5;
       const LOG_THICK_SCALE = 1.5;
@@ -1681,7 +1680,6 @@
       }));
 
       function isBlocked(gx, gy) {
-        if (gx === CHAI_STALL.gx && gy === CHAI_STALL.gy) return true;
         if (gx < -9 || gx > 9 || gy < -9 || gy > 9) return true;
         for (const b of Object.values(BUILDINGS)) {
           const hx = b.wx / 2 - 0.1;
@@ -2017,27 +2015,6 @@
         { gx: 5.2, gy: 2.2, phase: 1.8 },
         { gx: -5.2, gy: 1.6, phase: 3.1 },
       ];
-
-      function drawChaiStall() {
-        const { gx, gy } = CHAI_STALL;
-        drawPrism(gx, gy, 1.4, 1.2, 0, 11, "#f9cc82", "#a85028", "#71351e");
-        for (const offset of [-0.55, 0.55]) {
-          drawPrism(gx + offset, gy, 0.13, 0.13, 11, 26, "#ffd098", "#9a522a", "#70351e");
-        }
-        drawPrism(gx, gy, 0.34, 0.3, 11, 16, "#fef3c7", "#a16207", "#78350f");
-        drawPrism(gx, gy, 1.65, 1.4, 26, 31, "#d97706", "#a33c21", "#762c16");
-
-        const sign = iso(gx, gy, 39);
-        ctx.save();
-        ctx.font = "bold 13px monospace";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.fillStyle = "#562612";
-        ctx.fillRect(sign.x - 21, sign.y - 8, 42, 16);
-        ctx.fillStyle = "#ffdf9a";
-        ctx.fillText("CHAI", sign.x, sign.y);
-        ctx.restore();
-      }
 
       function drawTree(t, isNight, now) {
         const sway = prefersReducedMotion ? 0 : Math.sin(now * 0.0028 + t.phase) * 0.05;
@@ -2606,11 +2583,6 @@
             depth: b.gx + b.gy,
             draw: () => drawBuilding(b, isNight, now),
           });
-        });
-
-        renderables.push({
-          depth: CHAI_STALL.gx + CHAI_STALL.gy,
-          draw: drawChaiStall,
         });
 
         TREES.forEach((t) => {
