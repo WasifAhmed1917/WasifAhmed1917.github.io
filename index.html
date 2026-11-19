@@ -360,6 +360,10 @@
       flex-wrap: wrap;
     }
 
+    .touch-hint {
+      display: none;
+    }
+
     .player-chip {
       width: 10px;
       height: 10px;
@@ -639,20 +643,114 @@
     }
 
     @media (max-width: 680px) {
+      .container,
+      .mp-container {
+        width: calc(100% - 32px);
+      }
+
+      .site-header {
+        padding-top: 12px;
+      }
+
+      .header-top {
+        gap: 8px;
+        margin-bottom: 4px;
+      }
+
+      .theme-toggle-btn,
+      .mp-back-btn {
+        min-height: 44px;
+      }
+
       .mp-timeline-item {
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(0, 1fr);
         gap: 8px;
       }
+
       .site-nav {
-        gap: 12px 18px;
+        gap: 0 10px;
+        padding-bottom: 4px;
       }
-      .brand-tagline,
-      .brand-quick-links {
-        font-size: 0.78rem;
+
+      .site-nav a {
+        display: inline-flex;
+        align-items: center;
+        min-height: 44px;
+        min-width: 44px;
+        justify-content: center;
       }
+
       .world-stage {
-        height: 450px;
-        min-height: 430px;
+        flex: none;
+        height: clamp(254px, 70vw, 440px);
+        min-height: 0;
+      }
+
+      .section-view {
+        padding: 14px 0 48px;
+        overflow-wrap: anywhere;
+      }
+
+      .mp-back-row {
+        margin-bottom: 16px;
+      }
+
+      .mp-collapse-header,
+      .mp-collapse-content,
+      .mp-dotted-box {
+        padding-inline: 14px;
+      }
+
+      .mp-collapse-header,
+      .mp-entry-head {
+        gap: 8px;
+      }
+    }
+
+    @media (max-width: 520px) {
+      .pin-label {
+        min-width: 44px;
+        min-height: 44px;
+        padding: 0 6px;
+        font-size: 0.875rem;
+      }
+
+      .pin-label .pin-num {
+        margin-right: 0;
+      }
+
+      .pin-label[data-target="blog"] {
+        margin-top: -14px;
+      }
+
+      .pin-label[data-target="blog"]::after {
+        bottom: -23px;
+        height: 23px;
+      }
+
+      .pin-name {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        clip-path: inset(50%);
+        overflow: hidden;
+      }
+    }
+
+    @media (max-width: 360px) {
+      .site-nav {
+        justify-content: space-between;
+        column-gap: 2px;
+      }
+    }
+
+    @media (max-width: 520px), (pointer: coarse) {
+      .key-hint {
+        display: none;
+      }
+
+      .touch-hint {
+        display: inline;
       }
     }
 
@@ -715,19 +813,19 @@
         <!-- Clean Floating Building Labels -->
         <div class="pin-layer" id="pin-layer">
           <button class="pin-label" data-target="about">
-            <span class="pin-num">01</span> about
+            <span class="pin-num">01</span> <span class="pin-name">about</span>
           </button>
           <button class="pin-label" data-target="research">
-            <span class="pin-num">02</span> research
+            <span class="pin-num">02</span> <span class="pin-name">research</span>
           </button>
           <button class="pin-label" data-target="experience">
-            <span class="pin-num">03</span> experience
+            <span class="pin-num">03</span> <span class="pin-name">experience</span>
           </button>
           <button class="pin-label" data-target="cv">
-            <span class="pin-num">04</span> cv
+            <span class="pin-num">04</span> <span class="pin-name">cv</span>
           </button>
           <button class="pin-label" data-target="blog">
-            <span class="pin-num">05</span> blog
+            <span class="pin-num">05</span> <span class="pin-name">blog</span>
           </button>
         </div>
       </div>
@@ -736,9 +834,10 @@
       <footer class="town-footer">
         <div class="walk-hint">
           <span class="player-chip" aria-hidden="true"></span>
-          <span class="arrows-cluster">WASD / ↑ ← ↓ →</span>
-          <span class="hint-sep">/</span>
-          <span>press <span class="hint-key">enter</span> to visit</span>
+          <span class="key-hint arrows-cluster">WASD / ↑ ← ↓ →</span>
+          <span class="key-hint hint-sep">/</span>
+          <span class="key-hint">press <span class="hint-key">enter</span> to visit</span>
+          <span class="touch-hint">Tap to move. Tap a pin to visit.</span>
           <span id="near-building-hint"></span>
         </div>
       </footer>
@@ -1073,6 +1172,7 @@
       const mpPages = document.querySelectorAll(".mp-page[data-page]");
       const pinLabels = document.querySelectorAll(".pin-label[data-target]");
       const nearHintEl = document.getElementById("near-building-hint");
+      const directPinNavigation = window.matchMedia("(max-width: 520px), (pointer: coarse)");
 
       const SECTION_ALIASES = {
         projects: { page: "research", anchorId: "research-projects" },
@@ -1315,17 +1415,21 @@
       let originY = H * 0.44;
       let tileW = 23;
       let tileH = 11.8;
+      let townScale = 1;
       let currentHoverZ = 0;
 
       function resizeTownCanvas() {
         if (!townCanvas || !ctx || !worldStage) return;
         const rect = worldStage.getBoundingClientRect();
+        if (!rect.width || !rect.height) return;
         const dpr = window.devicePixelRatio || 1;
-        W = rect.width > 50 ? rect.width : Math.min(1360, window.innerWidth * 0.95);
-        H = rect.height > 50 ? rect.height : 600;
-        townCanvas.width = W * dpr;
-        townCanvas.height = H * dpr;
-        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        // Keep a consistent world projection and scale the entire scene to fit.
+        townScale = Math.min(1, rect.width / 640);
+        W = rect.width / townScale;
+        H = rect.height / townScale;
+        townCanvas.width = Math.round(rect.width * dpr);
+        townCanvas.height = Math.round(rect.height * dpr);
+        ctx.setTransform(townCanvas.width / W, 0, 0, townCanvas.height / H, 0, 0);
 
         const maxTileByW = (W * 0.86) / (GRID_RADIUS * 4);
         const maxTileByH = Math.max(150, H - 185) / (GRID_RADIUS * 4 * 0.515);
@@ -1668,7 +1772,8 @@
           const target = pin.getAttribute("data-target");
           const b = target ? BUILDINGS[target] : null;
           if (!b) return;
-          if (shunsui.nearBuilding && shunsui.nearBuilding.id === b.id && !shunsui.hopping) {
+          const isNearBuilding = shunsui.nearBuilding?.id === b.id && !shunsui.hopping;
+          if (isNearBuilding || directPinNavigation.matches) {
             openSectionPage(b.id, true);
           } else {
             queueWalkTo(b.doorGx, b.doorGy);
@@ -1678,7 +1783,7 @@
 
       townCanvas?.addEventListener("mousemove", (e) => {
         const rect = townCanvas.getBoundingClientRect();
-        const { gx, gy } = screenToIso(e.clientX - rect.left, e.clientY - rect.top);
+        const { gx, gy } = screenToIso((e.clientX - rect.left) / townScale, (e.clientY - rect.top) / townScale);
         hoverSteppingStones = Math.abs(gx - STEPPING_STONES_GX) < 0.72 && Math.abs(gy) < 0.85;
       });
 
@@ -1689,8 +1794,8 @@
       townCanvas?.addEventListener("click", (e) => {
         if (shunsui.state !== "normal") return;
         const rect = townCanvas.getBoundingClientRect();
-        const sx = e.clientX - rect.left;
-        const sy = e.clientY - rect.top;
+        const sx = (e.clientX - rect.left) / townScale;
+        const sy = (e.clientY - rect.top) / townScale;
 
         const charScreen = iso(shunsui.visGx, shunsui.visGy, 18);
         if (Math.hypot(sx - charScreen.x, sy - charScreen.y) < tileW * 1.0) {
@@ -2593,8 +2698,8 @@
           const b = id ? BUILDINGS[id] : null;
           if (!b) return;
           const anchor = iso(b.gx, b.gy, b.h + 22);
-          pin.style.left = `${anchor.x}px`;
-          pin.style.top = `${anchor.y}px`;
+          pin.style.left = `${anchor.x * townScale}px`;
+          pin.style.top = `${anchor.y * townScale}px`;
         });
       }
 
