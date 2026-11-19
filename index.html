@@ -278,12 +278,23 @@
       padding-bottom: 12px;
     }
 
+    @media (min-width: 681px) {
+      body:not(.section-active) .site-shell {
+        height: 100dvh;
+        min-height: 0;
+      }
+
+      .town-view {
+        min-height: 0;
+      }
+    }
+
     .world-stage {
       position: relative;
       width: 100%;
       flex: 1;
-      height: clamp(490px, 70vh, 700px);
-      min-height: 480px;
+      height: 0;
+      min-height: 270px;
       margin: 0 auto;
       user-select: none;
     }
@@ -1404,6 +1415,7 @@
       const townCanvas = document.getElementById("town-canvas");
       const ctx = townCanvas ? townCanvas.getContext("2d") : null;
       const worldStage = document.getElementById("world-stage");
+      const compactLayout = window.matchMedia("(max-width: 680px)");
 
       const GRID_RADIUS = 9.5;
       const SPAWN_GX = -1;
@@ -1425,6 +1437,7 @@
         const dpr = window.devicePixelRatio || 1;
         // Keep a consistent world projection and scale the entire scene to fit.
         townScale = Math.min(1, rect.width / 640);
+        if (!compactLayout.matches) townScale = Math.min(townScale, rect.height / 620);
         W = rect.width / townScale;
         H = rect.height / townScale;
         townCanvas.width = Math.round(rect.width * dpr);
@@ -1438,7 +1451,7 @@
         originX = W * 0.5;
         originY = 74 + (H - 185) * 0.5;
       }
-      window.addEventListener("resize", resizeTownCanvas);
+      if (worldStage) new ResizeObserver(resizeTownCanvas).observe(worldStage);
       resizeTownCanvas();
 
       function iso(gx, gy, z = 0) {
