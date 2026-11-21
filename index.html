@@ -591,6 +591,12 @@
       line-height: 1.72;
     }
 
+    .mp-time-body h3 {
+      color: var(--mp-text);
+      font-size: 1rem;
+      margin: 0 0 6px;
+    }
+
     .mp-time-body p {
       margin: 0;
     }
@@ -615,37 +621,6 @@
       font-weight: 700;
       color: var(--mp-text);
       margin: 0 0 18px;
-    }
-
-    .mp-box-entry + .mp-box-entry {
-      margin-top: 20px;
-    }
-
-    .mp-entry-head {
-      display: flex;
-      align-items: baseline;
-      justify-content: space-between;
-      gap: 16px;
-      margin-bottom: 4px;
-    }
-
-    .mp-entry-name {
-      font-weight: 700;
-      color: var(--mp-text);
-      font-size: 0.9rem;
-    }
-
-    .mp-entry-date {
-      color: var(--mp-muted);
-      font-size: 0.86rem;
-      white-space: nowrap;
-    }
-
-    .mp-entry-detail {
-      color: var(--mp-muted);
-      font-size: 0.86rem;
-      line-height: 1.65;
-      margin: 0;
     }
 
     .mp-about-bio {
@@ -720,8 +695,7 @@
         padding-inline: 14px;
       }
 
-      .mp-collapse-header,
-      .mp-entry-head {
+      .mp-collapse-header {
         gap: 8px;
       }
     }
@@ -800,10 +774,10 @@
             WASIF AHMED
           </a>
           <p class="brand-tagline">
-            LLM alignment &amp; safety · reasoning · interpretability · agents · inference
+            LLM alignment · reasoning · interpretability
           </p>
           <div class="brand-quick-links" aria-label="Quick links">
-            <a href="mailto:wasif@lums.edu.pk">email</a>
+            <a href="mailto:altmanwasif@gmail.com">email</a>
             <span class="link-sep" aria-hidden="true">·</span>
             <a href="#cv" data-section="cv">CV</a>
             <span class="link-sep" aria-hidden="true">·</span>
@@ -873,18 +847,18 @@
         <section class="mp-page hidden" data-page="about">
           <div class="mp-dotted-box">
             <h2 class="mp-box-title">about me</h2>
-            <p class="mp-about-bio">I’m Wasif Ahmed, a senior majoring in electrical engineering with a minor in computer science. My work focuses on large language model alignment and reasoning. I’m interested in understanding the internal mechanisms that support reasoning and guide the decisions of LLM-based agents, and in using those insights to make models more reliable under adversarial conditions. I also explore how to make inference more efficient through speculative decoding, quantization, and compression across model architectures.</p>
+            <p class="mp-about-bio">I’m Wasif Ahmed, a senior at LUMS majoring in electrical engineering with a minor in computer science. My research focuses on large language model alignment, reasoning, and mechanistic interpretability. I study how models represent and use information during reasoning, and whether intervening on those representations can make their behavior more reliable. I’m also exploring efficient inference, particularly speculative decoding, quantization, and compression.</p>
           </div>
 
           <div class="mp-contact-foot">
-            contact: <a href="mailto:wasif@lums.edu.pk" class="mp-link">wasif@lums.edu.pk</a>
+            contact: <a href="mailto:altmanwasif@gmail.com" class="mp-link">altmanwasif@gmail.com</a>
           </div>
         </section>
 
         <!-- ==================== 02 // RESEARCH (Collapsible Research Interests + Past Research + Projects + Ideas) ==================== -->
         <section class="mp-page hidden" data-page="research">
           <p class="mp-page-intro">
-            reaching out at: wasif [at] lums [dot] edu [dot] pk
+            Contact <a href="mailto:altmanwasif@gmail.com" class="mp-link">altmanwasif@gmail.com</a>
           </p>
 
           <!-- 1. Smoothly Collapsible `research interests [-]` Table (Screenshot 1) -->
@@ -897,33 +871,24 @@
               <div class="mp-collapse-inner">
                 <div class="mp-collapse-content">
                   <ul class="mp-dotted-list mp-interest-list">
-                    <li><strong>Efficient inference and model optimization</strong> — Speculative decoding, quantization, and compression across model architectures.</li>
                     <li><strong>Mechanistic interpretability of reasoning</strong> — How internal representations and computations support multistep reasoning.</li>
                     <li><strong>Interpretability of LLM-based agents</strong> — How agents plan, choose tools, and revise their decisions over multiple steps.</li>
                     <li><strong>Alignment and adversarial robustness</strong> — How models and agents behave under adversarial inputs and how to make them more reliable.</li>
+                    <li><strong>Efficient inference and model optimization</strong> — Speculative decoding, quantization, and compression across model architectures.</li>
                   </ul>
                 </div>
               </div>
             </div>
           </div>
 
-          <!-- 2. `## PAST RESEARCH` / Research Experience (Screenshot 2) -->
           <div class="mp-subblock">
             <h2 class="mp-h2">## RESEARCH EXPERIENCE</h2>
-            <p class="mp-sublead">[Add a one-line summary of your research focus here:]</p>
-
             <div class="mp-timeline">
               <div class="mp-timeline-item">
-                <div class="mp-time-label">2025-26</div>
+                <div class="mp-time-label">Jan. 2026–present</div>
                 <div class="mp-time-body">
-                  <p>[Add your research experience description, methods, findings, and workshop/paper links here.]</p>
-                </div>
-              </div>
-
-              <div class="mp-timeline-item">
-                <div class="mp-time-label">summer 2026</div>
-                <div class="mp-time-body">
-                  <p>[Add your research experience description, methods, findings, and workshop/paper links here.]</p>
+                  <h3>Research Assistant · CITY at LUMS</h3>
+                  <p>For my senior thesis under Dr. Muhammad Tahir, I’m exploring representation engineering for large language models. I compare the geometry of model activations across layers and stages of reasoning to see whether particular directions or subspaces distinguish correct from incorrect reasoning traces. I’m also exploring whether similar patterns emerge in safe and unsafe responses. The goal is to test whether intervening on those representations can change the behavior they appear to track.</p>
                 </div>
               </div>
             </div>
@@ -977,66 +942,23 @@
         <section class="mp-page hidden" data-page="experience">
           <div class="mp-subblock" style="margin-top: 0;">
             <h2 class="mp-h2">## EXPERIENCE</h2>
-            <p class="mp-sublead">[Add your academic and industry experience below:]</p>
-
             <div class="mp-timeline">
               <div class="mp-timeline-item">
-                <div class="mp-time-label">2025-26</div>
+                <div class="mp-time-label">Aug. 2026–present</div>
                 <div class="mp-time-body">
-                  <p>[Add role 01 details here.]</p>
-                </div>
-              </div>
-
-              <div class="mp-timeline-item">
-                <div class="mp-time-label">2024-25</div>
-                <div class="mp-time-body">
-                  <p>[Add role 02 details here.]</p>
+                  <h3>Teaching Assistant · AI on Edge Devices</h3>
+                  <p>At LUMS, I support 80 students with model quantization, pruning, and profiling assignments, as well as continual learning projects and technical troubleshooting.</p>
                 </div>
               </div>
             </div>
           </div>
         </section>
 
-        <!-- ==================== 04 // CV (Resumes + Honors & Awards Dotted Tables) ==================== -->
+        <!-- ==================== 04 // CV ==================== -->
         <section class="mp-page hidden" data-page="cv">
           <div class="mp-dotted-box">
-            <h2 class="mp-box-title">resumes &amp; curriculum vitae</h2>
-
-            <div class="mp-box-entry">
-              <div class="mp-entry-head">
-                <span class="mp-entry-name">academic &amp; research cv</span>
-                <span class="mp-entry-date"><a href="assets/Wasif_Ahmed_CV.pdf" class="mp-link">View PDF</a></span>
-              </div>
-            </div>
-
-            <div class="mp-box-entry">
-              <div class="mp-entry-head">
-                <span class="mp-entry-name">ml engineering resume</span>
-                <span class="mp-entry-date"><a href="#" class="mp-link">pdf ↗</a></span>
-              </div>
-              <p class="mp-entry-detail">[Add description or link to your engineering resume PDF here.]</p>
-            </div>
-          </div>
-
-          <!-- Honors & Awards Dotted Table Box under CV -->
-          <div id="cv-honors" class="mp-dotted-box">
-            <h2 class="mp-box-title">honors &amp; awards</h2>
-
-            <div class="mp-box-entry">
-              <div class="mp-entry-head">
-                <span class="mp-entry-name">[award / fellowship / honor 01]</span>
-                <span class="mp-entry-date">2026</span>
-              </div>
-              <p class="mp-entry-detail">[Add details here.]</p>
-            </div>
-
-            <div class="mp-box-entry">
-              <div class="mp-entry-head">
-                <span class="mp-entry-name">[award / competition / scholarship 02]</span>
-                <span class="mp-entry-date">2025</span>
-              </div>
-              <p class="mp-entry-detail">[Add details here.]</p>
-            </div>
+            <h2 class="mp-box-title">academic CV</h2>
+            <a href="assets/Wasif_Ahmed_CV.pdf" class="mp-link">View CV (PDF)</a>
           </div>
         </section>
 
@@ -1111,7 +1033,7 @@
 
       const SECTION_ALIASES = {
         projects: { page: "research", anchorId: "research-projects" },
-        honors: { page: "cv", anchorId: "cv-honors" },
+        honors: { page: "cv" },
       };
 
       let activeSection = null;
