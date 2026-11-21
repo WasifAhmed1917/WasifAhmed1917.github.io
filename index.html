@@ -556,12 +556,6 @@
       border-bottom: 1.5px solid var(--mp-border-solid);
     }
 
-    .mp-sublead {
-      color: var(--mp-muted);
-      font-size: 0.88rem;
-      margin: 0 0 24px;
-    }
-
     .mp-timeline {
       display: flex;
       flex-direction: column;
@@ -855,7 +849,7 @@
           </div>
         </section>
 
-        <!-- ==================== 02 // RESEARCH (Collapsible Research Interests + Past Research + Projects + Ideas) ==================== -->
+        <!-- ==================== 02 // RESEARCH ==================== -->
         <section class="mp-page hidden" data-page="research">
           <p class="mp-page-intro">
             Contact <a href="mailto:altmanwasif@gmail.com" class="mp-link">altmanwasif@gmail.com</a>
@@ -888,50 +882,7 @@
                 <div class="mp-time-label">Jan. 2026–present</div>
                 <div class="mp-time-body">
                   <h3>Research Assistant · CITY at LUMS</h3>
-                  <p>For my senior thesis under Dr. Muhammad Tahir, I’m exploring representation engineering for large language models. I compare the geometry of model activations across layers and stages of reasoning to see whether particular directions or subspaces distinguish correct from incorrect reasoning traces. I’m also exploring whether similar patterns emerge in safe and unsafe responses. The goal is to test whether intervening on those representations can change the behavior they appear to track.</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- 3. `## PROJECTS` Section under Research -->
-          <div id="research-projects" class="mp-subblock">
-            <h2 class="mp-h2">## PROJECTS</h2>
-            <p class="mp-sublead">[Add your project descriptions below:]</p>
-
-            <div class="mp-timeline">
-              <div class="mp-timeline-item">
-                <div class="mp-time-label">2026</div>
-                <div class="mp-time-body">
-                  <p>[Add project 01 details, stack, and GitHub link here.]</p>
-                </div>
-              </div>
-
-              <div class="mp-timeline-item">
-                <div class="mp-time-label">2025</div>
-                <div class="mp-time-body">
-                  <p>[Add project 02 details, stack, and GitHub link here.]</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- 4. Smoothly Collapsible `ideas [-]` Table -->
-          <div class="mp-collapse-box">
-            <button class="mp-collapse-header" aria-expanded="true">
-              <span>ideas</span>
-              <span class="mp-collapse-icon">[-]</span>
-            </button>
-            <div class="mp-collapse-drawer">
-              <div class="mp-collapse-inner">
-                <div class="mp-collapse-content">
-                  <p>[Add your open research questions and ideas here.]</p>
-
-                  <ul class="mp-dotted-list">
-                    <li>[Idea / Open Question 01]</li>
-                    <li>[Idea / Open Question 02]</li>
-                    <li>[Idea / Open Question 03]</li>
-                  </ul>
+                  <p>For my senior thesis under Dr. Muhammad Tahir, I’m exploring the representation geometry of large language models. I compare model activations across layers and stages of reasoning to see whether particular directions or subspaces distinguish correct from incorrect reasoning traces. I’m also exploring whether similar patterns emerge in safe and unsafe responses. The goal is to test whether intervening on those representations can change the behavior they appear to track.</p>
                 </div>
               </div>
             </div>
@@ -1032,13 +983,13 @@
       const directPinNavigation = window.matchMedia("(max-width: 520px), (pointer: coarse)");
 
       const SECTION_ALIASES = {
-        projects: { page: "research", anchorId: "research-projects" },
-        honors: { page: "cv" },
+        projects: "research",
+        honors: "cv",
       };
 
       let activeSection = null;
 
-      function openSectionPage(sectionId, pushHash = true, anchorId = null) {
+      function openSectionPage(sectionId, pushHash = true) {
         const targetPage = document.querySelector(`.mp-page[data-page="${sectionId}"]`);
         if (!targetPage) return;
 
@@ -1057,12 +1008,7 @@
 
         if (pushHash) history.pushState(null, "", `#${sectionId}`);
         const scrollBehavior = prefersReducedMotion ? "auto" : "smooth";
-        const anchorEl = anchorId ? document.getElementById(anchorId) : null;
-        if (anchorEl) {
-          anchorEl.scrollIntoView({ behavior: scrollBehavior, block: "start" });
-        } else {
-          window.scrollTo({ top: 0, behavior: scrollBehavior });
-        }
+        window.scrollTo({ top: 0, behavior: scrollBehavior });
       }
 
       function openHashRoute(rawHash) {
@@ -1070,7 +1016,7 @@
         if (!hash || hash === "town") return false;
         const alias = SECTION_ALIASES[hash];
         if (alias) {
-          openSectionPage(alias.page, false, alias.anchorId);
+          openSectionPage(alias, false);
           return true;
         }
         if (document.querySelector(`.mp-page[data-page="${hash}"]`)) {
