@@ -528,6 +528,16 @@
       font-size: 0.88rem;
     }
 
+    .mp-interest-list {
+      list-style: disc;
+      padding-inline-start: 1.25rem;
+      margin: 0;
+    }
+
+    .mp-interest-list li {
+      font-size: 1rem;
+    }
+
     /* ---------- COMPONENT TYPE 2 (Screenshot 2): `## SECTION` + Left Date / Vertical Bar Timeline ---------- */
     .mp-subblock {
       margin-top: 44px;
@@ -638,13 +648,11 @@
       margin: 0;
     }
 
-    .mp-now-list {
-      list-style: none;
-      padding: 0;
-      margin: 0;
+    .mp-about-bio {
       color: var(--mp-muted);
-      font-size: 0.88rem;
-      line-height: 1.8;
+      font-size: 1rem;
+      line-height: 1.7;
+      margin: 0;
     }
 
     .mp-contact-foot {
@@ -861,79 +869,11 @@
           <button id="back-to-town" class="mp-back-btn">← back to world</button>
         </div>
 
-        <!-- ==================== 01 // ABOUT (Education, Graduate Coursework, Certifications Dotted Tables) ==================== -->
+        <!-- ==================== 01 // ABOUT ==================== -->
         <section class="mp-page hidden" data-page="about">
-          <!-- Dotted Box 1: Education -->
           <div class="mp-dotted-box">
-            <h2 class="mp-box-title">education</h2>
-
-            <div class="mp-box-entry">
-              <div class="mp-entry-head">
-                <span class="mp-entry-name">[university / institution]</span>
-                <span class="mp-entry-date">2023-27</span>
-              </div>
-              <p class="mp-entry-detail">[degree / major details — edit here]</p>
-            </div>
-
-            <div class="mp-box-entry">
-              <div class="mp-entry-head">
-                <span class="mp-entry-name">[high school / prior institution]</span>
-                <span class="mp-entry-date">2019-23</span>
-              </div>
-              <p class="mp-entry-detail">[gpa · test scores · honors — edit here]</p>
-            </div>
-          </div>
-
-          <!-- Dotted Box 2: Graduate Coursework -->
-          <div class="mp-dotted-box">
-            <h2 class="mp-box-title">graduate coursework</h2>
-
-            <div class="mp-box-entry">
-              <div class="mp-entry-head">
-                <span class="mp-entry-name">[course title 01]</span>
-                <span class="mp-entry-date">2026</span>
-              </div>
-              <p class="mp-entry-detail">[topics / syllabus / notes — edit here]</p>
-            </div>
-
-            <div class="mp-box-entry">
-              <div class="mp-entry-head">
-                <span class="mp-entry-name">[course title 02]</span>
-                <span class="mp-entry-date">2025</span>
-              </div>
-              <p class="mp-entry-detail">[topics / syllabus / notes — edit here]</p>
-            </div>
-          </div>
-
-          <!-- Dotted Box 3: Certifications -->
-          <div class="mp-dotted-box">
-            <h2 class="mp-box-title">certifications</h2>
-
-            <div class="mp-box-entry">
-              <div class="mp-entry-head">
-                <span class="mp-entry-name">[organization / program 01]</span>
-                <span class="mp-entry-date">2026</span>
-              </div>
-              <p class="mp-entry-detail">[certificate title · details — edit here]</p>
-            </div>
-
-            <div class="mp-box-entry">
-              <div class="mp-entry-head">
-                <span class="mp-entry-name">[organization / program 02]</span>
-                <span class="mp-entry-date">2025</span>
-              </div>
-              <p class="mp-entry-detail">[certificate title · details — edit here]</p>
-            </div>
-          </div>
-
-          <!-- Dotted Box 4: /now -->
-          <div class="mp-dotted-box">
-            <h2 class="mp-box-title">/now</h2>
-            <ul class="mp-now-list">
-              <li>- [current role / activity 01]</li>
-              <li>- [current research / focus 02]</li>
-              <li>- [reading: book / paper title]</li>
-            </ul>
+            <h2 class="mp-box-title">about me</h2>
+            <p class="mp-about-bio">I’m Wasif Ahmed, a senior majoring in electrical engineering with a minor in computer science. My work focuses on large language model alignment and reasoning. I’m interested in understanding the internal mechanisms that support reasoning and guide the decisions of LLM-based agents, and in using those insights to make models more reliable under adversarial conditions. I also explore how to make inference more efficient through speculative decoding, quantization, and compression across model architectures.</p>
           </div>
 
           <div class="mp-contact-foot">
@@ -956,18 +896,12 @@
             <div class="mp-collapse-drawer">
               <div class="mp-collapse-inner">
                 <div class="mp-collapse-content">
-                  <p>[Add your overarching research interests introduction paragraph here.]</p>
-
-                  <ul class="mp-dotted-list">
-                    <li>[Research Topic 01]</li>
-                    <li>[Research Topic 02]</li>
-                    <li>[Research Topic 03]</li>
-                    <li>[Research Topic 04]</li>
-                    <li>[Research Topic 05]</li>
-                    <li>[Research Topic 06]</li>
+                  <ul class="mp-dotted-list mp-interest-list">
+                    <li><strong>Efficient inference and model optimization</strong> — Speculative decoding, quantization, and compression across model architectures.</li>
+                    <li><strong>Mechanistic interpretability of reasoning</strong> — How internal representations and computations support multistep reasoning.</li>
+                    <li><strong>Interpretability of LLM-based agents</strong> — How agents plan, choose tools, and revise their decisions over multiple steps.</li>
+                    <li><strong>Alignment and adversarial robustness</strong> — How models and agents behave under adversarial inputs and how to make them more reliable.</li>
                   </ul>
-
-                  <p>[Add your closing research direction note here.]</p>
                 </div>
               </div>
             </div>
@@ -1071,9 +1005,8 @@
             <div class="mp-box-entry">
               <div class="mp-entry-head">
                 <span class="mp-entry-name">academic &amp; research cv</span>
-                <span class="mp-entry-date"><a href="#" class="mp-link">pdf ↗</a></span>
+                <span class="mp-entry-date"><a href="assets/Wasif_Ahmed_CV.pdf" class="mp-link">View PDF</a></span>
               </div>
-              <p class="mp-entry-detail">[Add description or link to your research CV PDF here.]</p>
             </div>
 
             <div class="mp-box-entry">
@@ -1111,16 +1044,7 @@
         <section class="mp-page hidden" data-page="blog">
           <div class="mp-subblock" style="margin-top: 0;">
             <h2 class="mp-h2">## BLOG &amp; NOTES</h2>
-            <p class="mp-sublead">[Add your essays and working notes below:]</p>
-
-            <div class="mp-timeline">
-              <div class="mp-timeline-item">
-                <div class="mp-time-label">2026</div>
-                <div class="mp-time-body">
-                  <p>[Add blog post 01 title and link here.]</p>
-                </div>
-              </div>
-            </div>
+            <p><a href="assets/Wasif_Ahmed_CV.pdf" class="mp-link">View my CV (PDF)</a></p>
           </div>
         </section>
       </div>
